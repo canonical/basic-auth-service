@@ -11,6 +11,7 @@ from basic_auth import (
 
 install_requires = [
     'aiohttp',
+    'colander',
     'uvloop',
 ]
 

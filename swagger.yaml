@@ -1,0 +1,123 @@
+swagger: "2.0"
+info:
+  description: Basic-auth service API
+  version: "1.0"
+  title: Basic-auth service API
+host: esm.ubuntu.com
+basePath: /api
+tags:
+  - name: credentials
+    description: Basic-auth credentials
+schemes:
+  - http
+paths:
+  /credentials:
+    post:
+      tags:
+        - credentials
+      summary: Create basic-auth credentials for a user
+      description: Create basic-auth user and password for a user
+      operationId: addCredentials
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: User ID
+          required: true
+          schema:
+            $ref: '#/definitions/UserId'
+      responses:
+        '201':
+          description: User credentials created
+          schema:
+            $ref: '#/definitions/Credentials'
+        '400':
+          description: Invalid user specification
+        '409':
+          description: User with specified ID already exists
+  '/credentials/{userId}':
+    get:
+      tags:
+        - credentials
+      summary: Return credentials for a user
+      description: Return current basic-auth credentials for a user
+      operationId: getCredentialsById
+      produces:
+        - application/json
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user whose credentials to return
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Credentials'
+        '404':
+          description: User with specified ID not found
+    post:
+      tags:
+        - credentials
+      summary: Generate new credentials for a user
+      description: Regenerate basic-auth credentials for a user
+      operationId: updateCredentialsById
+      produces:
+        - application/json
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user to udpate credentials for
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Credentials'
+        '404':
+          description: ID of the user to update credentials for
+    delete:
+      tags:
+        - credentials
+      summary: Deletes credentials for a user
+      description: Delete basic-auth credentials for a user
+      operationId: deleteCredentials
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user to delete
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+        '404':
+          description: User with specified ID not found
+
+definitions:
+  UserId:
+    type: object
+    properties:
+      user-id:
+        type: string
+  Credentials:
+    type: object
+    properties:
+      user-id:
+        type: string
+      username:
+        type: string
+      password:
+        type: string
+  APIError:
+    type: object
+    properties:
+      type:
+        type: string
+      message:
+        type: string

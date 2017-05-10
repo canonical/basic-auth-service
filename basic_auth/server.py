@@ -7,9 +7,10 @@ import uvloop
 
 from . import (
     __doc__ as description,
-    handlers
+    handler,
+    api,
 )
-from .middleware import BasicAuthMiddlewareFactory
+from .application import BasicAuthCheckApplication
 
 
 def parse_args(args):
@@ -18,15 +19,22 @@ def parse_args(args):
 
 
 async def create_app():
-    app = web.Application(middlewares=[BasicAuthMiddlewareFactory()])
-    app.router.add_get('/', handlers.root)
-    app.router.add_get('/auth-check', handlers.auth_check)
-    app.router.add_get('/api', handlers.api)
+    """Create the base application."""
+    app = web.Application()
+    app.router.add_get('/', handler.root)
+    app.add_subapp('/auth-check', BasicAuthCheckApplication('auth-check'))
+    # setup API application
+    api_app = api.APIApplication()
+    resource = api.APIResource(None, None)  # XXX
+    endpoint = api.ResourceEndpoint('credentials', resource, '1.0')
+    endpoint.collection_methods = frozenset(['POST'])
+    endpoint.instance_methods = frozenset(['GET', 'PUT', 'PATCH', 'DELETE'])
+    api_app.register_endpoint(endpoint)
+    app.add_subapp('/api', api_app)
     return app
 
 
 def main(loop=None, raw_args=None):
-
     if loop is None:
         loop = uvloop.new_event_loop()
 
