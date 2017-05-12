@@ -11,10 +11,9 @@ from . import (
 )
 from .logging import setup_logging
 from .collection import CredentialsCollection
-from .middleware import BasicAuthMiddlewareFactory
 from .application import (
-    BasicAuthCheckApplication,
     setup_api_application,
+    setup_auth_check_application,
 )
 
 
@@ -26,13 +25,10 @@ def parse_args(args):
 async def create_app():
     """Create the base application."""
     collection = CredentialsCollection()
-    auth_middleware_factory = BasicAuthMiddlewareFactory(
-        'auth-check', collection)
     app = web.Application(middlewares=[web.normalize_path_middleware()])
     app.router.add_get('/', handler.root)
-    app.add_subapp(
-        '/auth-check', BasicAuthCheckApplication(auth_middleware_factory))
     app.add_subapp('/api', setup_api_application(collection))
+    app.add_subapp('/auth-check', setup_auth_check_application(collection))
     return app
 
 

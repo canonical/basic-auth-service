@@ -17,9 +17,9 @@ class ResourceEndpoint:
     """API endpoint for a resource type."""
 
     # Allowed HTTP methods for collection and instances requests.  Subclasses
-    # should set these.
-    collection_methods = frozenset()
-    instance_methods = frozenset()
+    # can change these.
+    collection_methods = frozenset(['POST'])
+    instance_methods = frozenset(['GET', 'PUT', 'DELETE'])
 
     _collection_methods_map = {
         'POST': 'create',
@@ -30,7 +30,7 @@ class ResourceEndpoint:
         'PUT': 'update',
     }
 
-    def __init__(self, name, resource, version):
+    def __init__(self, name, resource, version='1.0'):
         self.name = name
         self.resource = resource
         self.version = version

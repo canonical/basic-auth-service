@@ -11,6 +11,7 @@ from .api import (
     ResourceEndpoint,
     APIResource,
 )
+from .middleware import BasicAuthMiddlewareFactory
 
 
 class BasicAuthCheckApplication(web.Application):
@@ -36,13 +37,17 @@ class BasicAuthCheckApplication(web.Application):
 
 
 def setup_api_application(collection):
-    """Setup the APIApplication."""
+    """Setup an APIApplication."""
     app = APIApplication()
-    # XXX temporary sample setup
     resource = APIResource(
         collection, CredentialsCreateSchema, CredentialsUpdateSchema)
-    endpoint = ResourceEndpoint('credentials', resource, '1.0')
-    endpoint.collection_methods = frozenset(['POST'])
-    endpoint.instance_methods = frozenset(['GET', 'PUT', 'DELETE'])
+    endpoint = ResourceEndpoint('credentials', resource)
     app.register_endpoint(endpoint)
     return app
+
+
+def setup_auth_check_application(collection):
+    """Setup a BasicAuthCheckApplication."""
+    auth_middleware_factory = BasicAuthMiddlewareFactory(
+        'auth-check', collection)
+    return BasicAuthCheckApplication(auth_middleware_factory)

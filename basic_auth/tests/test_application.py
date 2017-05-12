@@ -3,12 +3,16 @@ from aiohttp.test_utils import (
     unittest_run_loop,
 )
 
-from ..testing import basic_auth_header
+from ..testing import (
+    basic_auth_header,
+    HandlerTestCase,
+)
 from ..api.testing import APIApplicationTestCase
 from ..middleware import BaseBasicAuthMiddlewareFactory
 from ..application import (
     BasicAuthCheckApplication,
     setup_api_application,
+    setup_auth_check_application
 )
 from ..collection import CredentialsCollection
 
@@ -54,9 +58,21 @@ class SetupAPIApplicationTest(APIApplicationTestCase):
         return setup_api_application(CredentialsCollection())
 
     @unittest_run_loop
-    async def test_setup_application(self):
-        """setup_application creates an application for the API."""
+    async def test_setup_api_application(self):
+        """An application for the API is set up."""
         content = {"user": "foo", "token": "user:pass"}
         response = await self.client_request(
             method='POST', path='/credentials', json=content)
         self.assertEqual(content, await response.json())
+
+
+class SetupAuthCheckApplicationTest(AioHTTPTestCase):
+
+    async def get_application(self):
+        return setup_auth_check_application(CredentialsCollection())
+
+    @unittest_run_loop
+    async def test_setup_auth_check_application(self):
+        """An application for the Basic-Auth check is set up."""
+        response = await self.client.request('GET', '/')
+        self.assertEqual(401, response.status)
