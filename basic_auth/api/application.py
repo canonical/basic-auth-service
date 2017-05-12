@@ -47,7 +47,9 @@ class ResourceEndpoint:
             content = func(payload)
         except Exception as error:
             return to_api_error(error)
-        return APIResponse(content=content)
+
+        response_code = 'Created' if request.method == 'POST' else 'Ok'
+        return APIResponse(content=content, response=response_code)
 
     async def handle_instance(self, request, instance_id):
         """Handle a request for an instance."""

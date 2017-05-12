@@ -1,7 +1,7 @@
-swagger: "2.0"
+swagger: '2.0'
 info:
   description: Basic-auth service API
-  version: "1.0"
+  version: '1.0'
   title: Basic-auth service API
 host: esm.ubuntu.com
 basePath: /api
@@ -25,10 +25,10 @@ paths:
       parameters:
         - in: body
           name: body
-          description: User ID
+          description: User credentials
           required: true
           schema:
-            $ref: '#/definitions/UserId'
+            $ref: '#/definitions/CreateCredentials'
       responses:
         '201':
           description: User credentials created
@@ -36,15 +36,19 @@ paths:
             $ref: '#/definitions/Credentials'
         '400':
           description: Invalid user specification
+          schema:
+            $ref: '#/definitions/APIError'
         '409':
           description: User with specified ID already exists
+          schema:
+            $ref: '#/definitions/APIError'
   '/credentials/{userId}':
     get:
       tags:
         - credentials
       summary: Return credentials for a user
       description: Return current basic-auth credentials for a user
-      operationId: getCredentialsById
+      operationId: getCredentials
       produces:
         - application/json
       parameters:
@@ -60,12 +64,16 @@ paths:
             $ref: '#/definitions/Credentials'
         '404':
           description: User with specified ID not found
-    post:
+          schema:
+            $ref: '#/definitions/APIError'
+    put:
       tags:
         - credentials
-      summary: Generate new credentials for a user
-      description: Regenerate basic-auth credentials for a user
-      operationId: updateCredentialsById
+      summary: Update or generate new credentials for a user
+      description: Update or generate new credentials for a user
+      operationId: updateCredentials
+      consumes:
+        - application/json
       produces:
         - application/json
       parameters:
@@ -74,13 +82,21 @@ paths:
           description: ID of the user to udpate credentials for
           required: true
           type: string
+        - name: body
+          in: body
+          description: Optional user credentials
+          required: true
+          schema:
+            $ref: '#/definitions/UpdateCredentials'
       responses:
         '200':
           description: Successful operation
           schema:
             $ref: '#/definitions/Credentials'
         '404':
-          description: ID of the user to update credentials for
+          description: User with specified ID not found
+          schema:
+            $ref: '#/definitions/APIError'
     delete:
       tags:
         - credentials
@@ -96,28 +112,45 @@ paths:
       responses:
         '200':
           description: Successful operation
+          schema:
+            $ref: '#/definitions/EmptyResponse'
         '404':
           description: User with specified ID not found
-
+          schema:
+            $ref: '#/definitions/APIError'
 definitions:
-  UserId:
-    type: object
-    properties:
-      user-id:
-        type: string
   Credentials:
     type: object
     properties:
-      user-id:
+      user:
         type: string
-      username:
+        description: The user identifier
+      token:
         type: string
-      password:
+        description: 'Optional user token in the "<username>:<password>" form'
+  CreateCredentials:
+    type: object
+    properties:
+      user:
         type: string
+        description: The user identifier
+      token:
+        type: string
+        description: 'Optional user token in the "<username>:<password>" form'
+  UpdateCredentials:
+    type: object
+    properties:
+      token:
+        type: string
+        description: 'Optional user token in the "<username>:<password>" form'
+  EmptyResponse:
+    type: object
   APIError:
     type: object
     properties:
-      type:
+      code:
         type: string
+        description: Text form of the HTTP error
       message:
         type: string
+        description: Extended error message

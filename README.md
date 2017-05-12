@@ -15,7 +15,7 @@ The authentication endpoint is presented at `/auth-check` and returns an empty
 response with the following HTTP codes:
 
 - `200` for valid credentials
-- `401` for invalid credentials.
+- `401` for invalid credentials
 
 This endpoint can be used to integrate the application with web servers; the
 following snippet shows an example for the [Nginx](http://nginx.org/) web

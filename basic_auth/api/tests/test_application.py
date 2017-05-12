@@ -38,7 +38,7 @@ class ResourceEndpointTest(APITestCase):
         content = {'id': 'foo', 'value': 'bar'}
         request = self.get_request(method='POST', content=content)
         response = await self.endpoint.handle_collection(request)
-        self.assertEqual(200, response.status)
+        self.assertEqual(201, response.status)
         self.assertEqual(content, json.loads(response.text))
 
     async def test_handle_collection_method_not_allowed(self):
@@ -157,7 +157,7 @@ class APIApplicationTest(APIApplicationTestCase):
         content = {'id': 'foo', 'value': 'bar'}
         response = await self.client_request(
             method='POST', path='/sample', json=content)
-        self.assertEqual(200, response.status)
+        self.assertEqual(201, response.status)
         self.assertEqual(content, await response.json())
 
     @unittest_run_loop
