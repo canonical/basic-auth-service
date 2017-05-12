@@ -1,9 +1,7 @@
 import json
 
 from aiohttp import web
-from aiohttp.test_utils import (
-    unittest_run_loop,
-)
+from aiohttp.test_utils import unittest_run_loop
 
 from ..testing import (
     APITestCase,

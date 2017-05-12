@@ -4,8 +4,13 @@ from aiohttp.test_utils import (
 )
 
 from ..testing import basic_auth_header
+from ..api.testing import APIApplicationTestCase
 from ..middleware import BaseBasicAuthMiddlewareFactory
-from ..application import BasicAuthCheckApplication
+from ..application import (
+    BasicAuthCheckApplication,
+    setup_api_application,
+)
+from ..collection import CredentialsCollection
 
 
 class AuthCheckMiddlewareFactory(BaseBasicAuthMiddlewareFactory):
@@ -19,8 +24,8 @@ class AuthCheckMiddlewareFactory(BaseBasicAuthMiddlewareFactory):
 class BasicAuthCheckApplicationTest(AioHTTPTestCase):
 
     async def get_application(self):
-        return BasicAuthCheckApplication(
-            'realm', auth_middleware=AuthCheckMiddlewareFactory)
+        middleware = AuthCheckMiddlewareFactory('realm')
+        return BasicAuthCheckApplication(middleware)
 
     @unittest_run_loop
     async def test_no_auth(self):
@@ -41,3 +46,17 @@ class BasicAuthCheckApplicationTest(AioHTTPTestCase):
         auth = basic_auth_header('user', 'pass')
         response = await self.client.request('GET', '/', headers=auth)
         self.assertEqual(200, response.status)
+
+
+class SetupAPIApplicationTest(APIApplicationTestCase):
+
+    async def get_application(self):
+        return setup_api_application(CredentialsCollection())
+
+    @unittest_run_loop
+    async def test_setup_application(self):
+        """setup_application creates an application for the API."""
+        content = {"user": "foo", "token": "user:pass"}
+        response = await self.client_request(
+            method='POST', path='/credentials', json=content)
+        self.assertEqual(content, await response.json())

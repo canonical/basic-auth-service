@@ -11,9 +11,16 @@ def valid_basic_auth(node, value):
             node, 'Token must be in the form "<user>:<password>"')
 
 
-class Credentials(colander.MappingSchema):
-    """Basic-Auth credentials."""
+class CredentialsCreateSchema(colander.MappingSchema):
+    """Basic-Auth credentials create schema."""
 
     user = colander.SchemaNode(colander.String())
+    token = colander.SchemaNode(
+        colander.String(), validator=valid_basic_auth, missing=None)
+
+
+class CredentialsUpdateSchema(colander.MappingSchema):
+    """Basic-Auth credentials update schema."""
+
     token = colander.SchemaNode(
         colander.String(), validator=valid_basic_auth, missing=None)

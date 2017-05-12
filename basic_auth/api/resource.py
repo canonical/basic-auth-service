@@ -38,7 +38,7 @@ class APIResource:
     def __init__(self, collection, create_schema, update_schema):
         self.collection = collection
         self.create_schema = create_schema
-        self.update_schema = update_schema  # XXX not used yet
+        self.update_schema = update_schema
 
     def create(self, data):
         """Create a resource from the specified details."""

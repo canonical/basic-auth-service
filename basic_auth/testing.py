@@ -60,6 +60,7 @@ def get_request(app, path='/', method='GET', content=None,
 
 
 class HandlerTestCase(asynctest.TestCase):
+    """Test class for testing direct calls to HTTP handlers."""
 
     def setUp(self):
         super().setUp()

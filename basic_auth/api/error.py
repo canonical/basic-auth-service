@@ -1,5 +1,8 @@
 """REST API resource errors."""
 
+import logging
+import traceback
+
 from .response import APIError
 
 
@@ -45,5 +48,9 @@ def to_api_error(error):
     """
     if isinstance(error, ResourceError):
         return APIError(error.http_error, message=str(error))
+
+    # Log the error since it's likely an application issue
+    logger = logging.getLogger()
+    logger.error(traceback.format_exc())
     return APIError(
         'InternalServerError', message='A server error has occurred')

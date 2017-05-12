@@ -43,5 +43,11 @@ class BaseBasicAuthMiddlewareFactory:
 
 
 class BasicAuthMiddlewareFactory(BaseBasicAuthMiddlewareFactory):
+    """Basic-Auth middleware fetching authentication from a collection."""
 
-    pass
+    def __init__(self, realm, collection):
+        super().__init__(realm)
+        self.collection = collection
+
+    def is_valid_auth(self, user, password):
+        return self.collection.credentials_match(user, password)

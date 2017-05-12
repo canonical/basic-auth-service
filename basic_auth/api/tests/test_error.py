@@ -1,5 +1,6 @@
 import json
-from unittest import TestCase
+
+import fixtures
 
 from ..error import (
     ResourceAlreadyExists,
@@ -7,7 +8,11 @@ from ..error import (
     to_api_error)
 
 
-class ToAPIErrorTest(TestCase):
+class ToAPIErrorTest(fixtures.TestWithFixtures):
+
+    def setUp(self):
+        super().setUp()
+        self.useFixture(fixtures.LoggerFixture())
 
     def test_from_resource_error_already_exists(self):
         """ResourceAlreadyExists is converted to an HTTP Conflict."""

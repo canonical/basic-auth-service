@@ -16,9 +16,8 @@ class SampleResourceCollectionTest(TestCase):
 
     def test_create(self):
         """Resources can be created in the collection."""
-        element = {'id': 'foo', 'bar': 'baz'}
-        self.collection.create(element)
-        self.assertEqual({'foo': element}, self.collection.items)
+        self.collection.create({'id': 'foo', 'bar': 'baz'})
+        self.assertEqual({'foo': {'bar': 'baz'}}, self.collection.items)
 
     def test_create_duplicated(self):
         """Trying to create a resource with an existing ID raises an error."""

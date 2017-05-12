@@ -47,7 +47,7 @@ class APIResourceTest(TestCase):
         "The create methods adds an item to the collection."
         data = {'id': 'foo', 'value': 'bar'}
         self.assertEqual(data, self.resource.create(data))
-        self.assertEqual({'foo': data}, self.collection.items)
+        self.assertEqual({'foo': {'value': 'bar'}}, self.collection.items)
 
     def test_create_missing_field(self):
         """If a required field is missing, an error is raised."""

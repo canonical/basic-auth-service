@@ -1,3 +1,5 @@
+import unittest
+
 from aiohttp import web
 
 import asynctest
@@ -5,6 +7,7 @@ import asynctest
 from ..testing import HandlerTestCase
 from ..middleware import (
     BaseBasicAuthMiddlewareFactory,
+    BasicAuthMiddlewareFactory,
 )
 
 
@@ -15,6 +18,16 @@ class SampleBasicAuthMiddlewareFactory(BaseBasicAuthMiddlewareFactory):
         self.calls = []
 
     def is_valid_auth(self, user, password):
+        self.calls.append((user, password))
+        return (user, password) == ('user', 'pass')
+
+
+class SampleCollection:
+
+    def __init__(self):
+        self.calls = []
+
+    def credentials_match(self, user, password):
         self.calls.append((user, password))
         return (user, password) == ('user', 'pass')
 
@@ -85,3 +98,14 @@ class BaseBasicAuthMiddlewareFactoryTest(HandlerTestCase):
         self.assertEqual([request], calls)
         # authentication is checked
         self.assertEqual([('user', 'pass')], self.middleware.calls)
+
+
+class BasicAuthMiddlewareFactoryTest(unittest.TestCase):
+
+    def test_validate_credentials(self):
+        """is_valid_auth calls the validation from the Collection."""
+        collection = SampleCollection()
+        middleware = BasicAuthMiddlewareFactory('realm', collection)
+        self.assertFalse(middleware.is_valid_auth('foo', 'bar'))
+        self.assertTrue(middleware.is_valid_auth('user', 'pass'))
+        self.assertEqual([('foo', 'bar'), ('user', 'pass')], collection.calls)
