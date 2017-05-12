@@ -3,7 +3,7 @@
 import colander
 
 
-def validator_basic_auth(node, value):
+def valid_basic_auth(node, value):
     """Validator for Basic-Auth tokens."""
     split = value.split(':')
     if len(split) != 2 or '' in split:
@@ -14,6 +14,6 @@ def validator_basic_auth(node, value):
 class Credentials(colander.MappingSchema):
     """Basic-Auth credentials."""
 
-    user = colander.SchemaNode(colander.String(), missing=colander.required)
+    user = colander.SchemaNode(colander.String())
     token = colander.SchemaNode(
-        colander.String(), validator=validator_basic_auth)
+        colander.String(), validator=valid_basic_auth, missing=None)

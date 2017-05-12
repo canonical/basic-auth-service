@@ -10,6 +10,7 @@ from .response import (
     APIResponse,
     APIError,
 )
+from .error import to_api_error
 
 
 class ResourceEndpoint:
@@ -25,6 +26,8 @@ class ResourceEndpoint:
     }
     _instance_methods_map = {
         'GET': 'get',
+        'DELETE': 'delete',
+        'PUT': 'update',
     }
 
     def __init__(self, name, resource, version):
@@ -36,21 +39,30 @@ class ResourceEndpoint:
         """Handle a request for a collection."""
         allowed_methods = self.collection_methods.intersection(
             self._collection_methods_map)
-        content = await self._validate_request(request, allowed_methods)
+        payload = await self._validate_request(request, allowed_methods)
 
-        method = getattr(
+        func = getattr(
             self.resource, self._collection_methods_map[request.method])
-        return APIResponse(content=method(content))
+        try:
+            content = func(payload)
+        except Exception as error:
+            return to_api_error(error)
+        return APIResponse(content=content)
 
     async def handle_instance(self, request, instance_id):
         """Handle a request for an instance."""
         allowed_methods = self.instance_methods.intersection(
             self._instance_methods_map)
-        content = await self._validate_request(request, allowed_methods)
+        payload = await self._validate_request(request, allowed_methods)
 
-        method = getattr(
+        func = getattr(
             self.resource, self._instance_methods_map[request.method])
-        return APIResponse(content=method(instance_id, content=content))
+        try:
+            content = func(instance_id, payload)
+        except Exception as error:
+            return to_api_error(error)
+
+        return APIResponse(content=content)
 
     async def _validate_request(self, request, allowed_methods):
         """Check that the request is valid and return the decoded payload."""

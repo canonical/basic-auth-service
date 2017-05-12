@@ -4,11 +4,15 @@ from .application import (
     APIApplication,
     ResourceEndpoint,
 )
-from .resource import APIResource
+from .resource import (
+    APIResource,
+    ResourceCollection,
+)
 
 
 __all__ = [
     'APIApplication',
+    'ResourceCollection',
     'ResourceEndpoint',
     'APIResource',
 ]

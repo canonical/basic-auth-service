@@ -10,6 +10,11 @@ from . import (
     handler,
     api,
 )
+from .api.sample import (
+    SampleCreateSchema,
+    SampleUpdateSchema,
+    SampleResourceCollection,
+)
 from .application import BasicAuthCheckApplication
 
 
@@ -25,10 +30,12 @@ async def create_app():
     app.add_subapp('/auth-check', BasicAuthCheckApplication('auth-check'))
     # setup API application
     api_app = api.APIApplication()
-    resource = api.APIResource(None, None)  # XXX
+    # XXX temporary sample setup
+    resource = api.APIResource(
+        SampleResourceCollection(), SampleCreateSchema, SampleUpdateSchema)
     endpoint = api.ResourceEndpoint('credentials', resource, '1.0')
     endpoint.collection_methods = frozenset(['POST'])
-    endpoint.instance_methods = frozenset(['GET', 'PUT', 'PATCH', 'DELETE'])
+    endpoint.instance_methods = frozenset(['GET', 'PUT', 'DELETE'])
     api_app.register_endpoint(endpoint)
     app.add_subapp('/api', api_app)
     return app

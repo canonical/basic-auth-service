@@ -9,7 +9,10 @@ from ..testing import (
     APITestCase,
     APIApplicationTestCase,
 )
-
+from ..sample import (
+    SampleCreateSchema,
+    SampleResourceCollection,
+)
 from ..application import (
     ResourceEndpoint,
     APIApplication,
@@ -27,14 +30,18 @@ class ResourceEndpointTest(APITestCase):
 
     def setUp(self):
         super().setUp()
-        self.resource = APIResource(None, None)
+        self.collection = SampleResourceCollection()
+        self.resource = APIResource(
+            self.collection, SampleCreateSchema, None)
         self.endpoint = SampleResourceEndpoint('sample', self.resource, '1.0')
 
     async def test_handle_collection(self):
         """Allowed methods can be called on handle_collection."""
-        request = self.get_request(method='POST')
+        content = {'id': 'foo', 'value': 'bar'}
+        request = self.get_request(method='POST', content=content)
         response = await self.endpoint.handle_collection(request)
         self.assertEqual(200, response.status)
+        self.assertEqual(content, json.loads(response.text))
 
     async def test_handle_collection_method_not_allowed(self):
         """handle_collection return an error for not allowed methods."""
@@ -43,6 +50,10 @@ class ResourceEndpointTest(APITestCase):
             await self.endpoint.handle_collection(request)
         response = cm.exception
         self.assertEqual(405, response.status_code)
+        self.assertEqual(
+            {'code': 'Method Not Allowed',
+             'message': 'Only POST requests are allowed'},
+            json.loads(response.text))
 
     async def test_handle_collectione_only_implemented_method(self):
         """Only implemented methods are accepted in collection_methods."""
@@ -61,9 +72,21 @@ class ResourceEndpointTest(APITestCase):
 
     async def test_handle_instance(self):
         """Allowed methods can be called on handle_instance."""
+        content = {'id': 'foo', 'value': 'bar'}
+        self.collection.create(content)
         request = self.get_request()
         response = await self.endpoint.handle_instance(request, 'foo')
         self.assertEqual(200, response.status)
+
+    async def test_handle_instance_not_found(self):
+        """Resource errors are converted to corresponding HTTP errors."""
+        request = self.get_request()
+        response = await self.endpoint.handle_instance(request, 'foo')
+        self.assertEqual(404, response.status)
+        self.assertEqual(
+            {'code': 'Not Found',
+             'message': 'Resource with ID "foo" not found'},
+            json.loads(response.text))
 
     async def test_handle_instance_method_not_allowed(self):
         """handle_collection return an error for not allowed methods."""
@@ -119,7 +142,9 @@ class ResourceEndpointTest(APITestCase):
 class APIApplicationTest(APIApplicationTestCase):
 
     def setUp(self):
-        self.resource = APIResource(None, None)
+        self.collection = SampleResourceCollection()
+        self.resource = APIResource(
+            self.collection, SampleCreateSchema, None)
         self.endpoint = SampleResourceEndpoint('sample', self.resource, '1.0')
         super().setUp()
 
@@ -131,11 +156,19 @@ class APIApplicationTest(APIApplicationTestCase):
     @unittest_run_loop
     async def test_request_collection(self):
         """A request to the collection URL calls the appropriate handler."""
-        response = await self.client_request(method='POST', path='/sample')
-        self.assertEqual('{}', await response.text())
+        content = {'id': 'foo', 'value': 'bar'}
+        response = await self.client_request(
+            method='POST', path='/sample', json=content)
+        self.assertEqual(200, response.status)
+        self.assertEqual(content, await response.json())
 
     @unittest_run_loop
     async def test_request_instance(self):
         """A request to the instance URL calls the appropriate handler."""
+        content = {'id': 'foo', 'value': 'bar'}
+        self.collection.create(content)
+        await self.client_request(
+            method='POST', path='/sample', json=content)
         response = await self.client_request(path='/sample/foo')
-        self.assertEqual({'id': 'foo'}, await response.json())
+        self.assertEqual(200, response.status)
+        self.assertEqual(content, await response.json())
