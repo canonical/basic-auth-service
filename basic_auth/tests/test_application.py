@@ -3,10 +3,7 @@ from aiohttp.test_utils import (
     unittest_run_loop,
 )
 
-from ..testing import (
-    basic_auth_header,
-    HandlerTestCase,
-)
+from ..testing import basic_auth_header
 from ..api.testing import APIApplicationTestCase
 from ..middleware import BaseBasicAuthMiddlewareFactory
 from ..application import (
