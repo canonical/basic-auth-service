@@ -44,12 +44,19 @@ class ResourceEndpoint:
         func = getattr(
             self.resource, self._collection_methods_map[request.method])
         try:
-            content = func(payload)
+            result = func(payload)
         except Exception as error:
             return to_api_error(error)
 
-        response_code = 'Created' if request.method == 'POST' else 'Ok'
-        return APIResponse(content=content, response=response_code)
+        if request.method == 'POST':
+            # The create method returns the resource ID too.
+            res_id, content = result
+            url = request.app.router['instance'].url_for(instance_id=res_id)
+            headers = {'Location': str(url)}
+            return APIResponse(
+                content=content, response='Created', headers=headers)
+        else:
+            return APIResponse(content=result)
 
     async def handle_instance(self, request, instance_id):
         """Handle a request for an instance."""
@@ -100,10 +107,11 @@ class APIApplication(web.Application):
     def register_endpoint(self, endpoint):
         self.router.add_route(
             '*', '/{name}'.format(name=endpoint.name),
-            endpoint.handle_collection)
+            endpoint.handle_collection, name='collection')
         self.router.add_route(
             '*', '/{name}/{{instance_id}}'.format(name=endpoint.name),
-            self._wrap_handle_instance(endpoint.handle_instance))
+            self._wrap_handle_instance(endpoint.handle_instance),
+            name='instance')
 
     def _wrap_handle_instance(self, handle_instance):
         """Wrap handle_instance handler to pass the id as parameter."""

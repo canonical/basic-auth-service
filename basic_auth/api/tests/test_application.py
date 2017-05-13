@@ -9,6 +9,7 @@ from ..testing import (
 )
 from ..sample import (
     SampleCreateSchema,
+    SampleUpdateSchema,
     SampleResourceCollection,
 )
 from ..application import (
@@ -27,19 +28,42 @@ class SampleResourceEndpoint(ResourceEndpoint):
 class ResourceEndpointTest(APITestCase):
 
     def setUp(self):
-        super().setUp()
         self.collection = SampleResourceCollection()
         self.resource = APIResource(
-            self.collection, SampleCreateSchema, None)
+            self.collection, SampleCreateSchema, SampleUpdateSchema)
         self.endpoint = SampleResourceEndpoint('sample', self.resource, '1.0')
+        super().setUp()
 
-    async def test_handle_collection(self):
-        """Allowed methods can be called on handle_collection."""
+    def create_app(self):
+        app = APIApplication()
+        app.register_endpoint(self.endpoint)
+        return app
+
+    async def test_handle_collection_create(self):
+        """The create method returns a Created response with details."""
         content = {'id': 'foo', 'value': 'bar'}
         request = self.get_request(method='POST', content=content)
         response = await self.endpoint.handle_collection(request)
         self.assertEqual(201, response.status)
         self.assertEqual(content, json.loads(response.text))
+
+    async def test_handle_collection_other(self):
+        """Non-create methods return Ok if the operation has success."""
+        content = {'id': 'foo', 'value': 'bar'}
+        self.collection.create(content)
+
+        # Add a non-create method on the resource
+        self.endpoint.collection_methods = frozenset(['GET'])
+        self.endpoint._collection_methods_map = {'GET': 'get_collection'}
+
+        def get_collection(request):
+            return [content]
+
+        self.resource.get_collection = get_collection
+        request = self.get_request(method='GET', content=content)
+        response = await self.endpoint.handle_collection(request)
+        self.assertEqual(200, response.status)
+        self.assertEqual([content], json.loads(response.text))
 
     async def test_handle_collection_method_not_allowed(self):
         """handle_collection return an error for not allowed methods."""
@@ -53,7 +77,7 @@ class ResourceEndpointTest(APITestCase):
              'message': 'Only POST requests are allowed'},
             json.loads(response.text))
 
-    async def test_handle_collectione_only_implemented_method(self):
+    async def test_handle_collection_only_implemented_method(self):
         """Only implemented methods are accepted in collection_methods."""
         # PATCH is not implemented
         self.endpoint.instance_methods = frozenset(['POST', 'PATCH'])
@@ -142,7 +166,7 @@ class APIApplicationTest(APIApplicationTestCase):
     def setUp(self):
         self.collection = SampleResourceCollection()
         self.resource = APIResource(
-            self.collection, SampleCreateSchema, None)
+            self.collection, SampleCreateSchema, SampleUpdateSchema)
         self.endpoint = SampleResourceEndpoint('sample', self.resource, '1.0')
         super().setUp()
 
@@ -159,6 +183,7 @@ class APIApplicationTest(APIApplicationTestCase):
             method='POST', path='/sample', json=content)
         self.assertEqual(201, response.status)
         self.assertEqual(content, await response.json())
+        self.assertEqual('/sample/foo', response.headers['Location'])
 
     @unittest_run_loop
     async def test_request_instance(self):

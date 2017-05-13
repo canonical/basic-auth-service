@@ -9,19 +9,33 @@ class ResourceCollection:
     """A resource collection."""
 
     def create(self, details):
-        """Create a resource with specified details."""
+        """Create a resource with specified details.
+
+        This method must return a 2-tuple with the resource ID and
+        representation as dict.
+
+        """
         raise NotImplementedError('Subclasses must implement create()')
 
     def delete(self, res_id):
-        """Delete the resource with specified ID."""
+        """Delete the resource with specified ID.
+
+        This method should return nothing.
+        """
         raise NotImplementedError('Subclasses must implement delete()')
 
     def get(self, res_id):
-        """Return the resource with specified ID."""
+        """Return the resource with specified ID.
+
+        This method must return a dict with the resource details.
+        """
         raise NotImplementedError('Subclasses must implement get()')
 
     def update(self, res_id, details):
-        """Update the resource with specified ID."""
+        """Update the resource with specified ID.
+
+        This method must return a dict with updated resource details.
+        """
         raise NotImplementedError('Subclasses must implement update()')
 
 
@@ -47,7 +61,7 @@ class APIResource:
 
     def delete(self, resource_id, data=None):
         """Delete a resource by ID."""
-        return self.collection.delete(resource_id)
+        self.collection.delete(resource_id)
 
     def get(self, resource_id, data=None):
         """Return a resource by ID."""

@@ -42,8 +42,8 @@ class SampleResourceCollection(ResourceCollection):
         if res_id in self.items:
             raise ResourceAlreadyExists(res_id)
         self.items[res_id] = resource_details
-        # return the original details including ID
-        return details
+        # Retruned details include the resource ID
+        return res_id, details
 
     def delete(self, res_id):
         try:

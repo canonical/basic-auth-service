@@ -16,7 +16,10 @@ class SampleResourceCollectionTest(TestCase):
 
     def test_create(self):
         """Resources can be created in the collection."""
-        self.collection.create({'id': 'foo', 'bar': 'baz'})
+        data = {'id': 'foo', 'bar': 'baz'}
+        res_id, details = self.collection.create(data)
+        self.assertEqual('foo', res_id)
+        self.assertEqual(data, details)
         self.assertEqual({'foo': {'bar': 'baz'}}, self.collection.items)
 
     def test_create_duplicated(self):

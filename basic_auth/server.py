@@ -16,7 +16,7 @@ from .application import (
 )
 
 
-def create_app():
+def create_app(conf):
     """Create the base application."""
     collection = CredentialsCollection()
     app = web.Application(middlewares=[web.normalize_path_middleware()])
