@@ -29,9 +29,8 @@ def create_app():
 def main():
     """Server main."""
     args = parse_args()
-    print(load_config(args))
     setup_logging()
-
+    conf = load_config(args)
+    app = create_app(conf)
     loop = uvloop.new_event_loop()
-    app = create_app()
     web.run_app(app, port=8080, loop=loop)
