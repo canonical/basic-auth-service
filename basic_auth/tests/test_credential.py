@@ -8,8 +8,14 @@ class BasicAuthCredentialsTest(TestCase):
     def test_generate(self):
         """It's possible to generate random BasicAuthCredentials."""
         creds = BasicAuthCredentials.generate()
-        self.assertIsNotNone(creds.user)
+        self.assertIsNotNone(creds.username)
         self.assertIsNotNone(creds.password)
+
+    def test_from_token(self):
+        """BasicAuthCredentials can be created from a "user:password" token."""
+        creds = BasicAuthCredentials.from_token('foo:bar')
+        self.assertEqual('foo', creds.username)
+        self.assertEqual('bar', creds.password)
 
     def test_random(self):
         """Generated credentials are random."""

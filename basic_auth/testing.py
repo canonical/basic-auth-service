@@ -2,6 +2,8 @@
 
 import json
 
+import yaml
+
 import asynctest
 
 from aiohttp import (
@@ -11,6 +13,28 @@ from aiohttp import (
 )
 from aiohttp.helpers import sentinel
 from aiohttp.test_utils import make_mocked_request
+
+
+TEST_DB_DSN = 'postgresql:///basic-auth-test'
+
+
+def create_test_config(filename=None, db_dsn=TEST_DB_DSN):
+    """Create a test configuration.
+
+    If filename is given, the configuration is written to file rather than
+    returned as dict.
+
+    """
+    config = {
+        'db': {
+            'dsn': db_dsn
+        }
+    }
+    if not filename:
+        return config
+
+    with open(filename, 'w') as fd:
+        yaml.dump(config, stream=fd)
 
 
 def basic_auth_header(user, password):

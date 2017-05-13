@@ -7,7 +7,7 @@ import hashlib
 
 
 _BasicAuthCredentials = namedtuple(
-    'BasicAuthCredentials', ['user', 'password'])
+    'BasicAuthCredentials', ['username', 'password'])
 
 
 class BasicAuthCredentials(_BasicAuthCredentials):
@@ -18,6 +18,15 @@ class BasicAuthCredentials(_BasicAuthCredentials):
         """Generate random BasicAuthCredentials."""
         return cls(cls._random_token(), cls._random_token())
 
+    @classmethod
+    def from_token(cls, token):
+        """create BasicAuthCredentials from a "user:password" token."""
+        split = token.split(':')
+        if len(split) != 2 or '' in split:
+            raise ValueError(
+                'Token must be in the form "user:password"')
+        return cls(*split)
+
     @staticmethod
     def _random_token():
         choices = string.ascii_letters + string.digits
@@ -25,4 +34,4 @@ class BasicAuthCredentials(_BasicAuthCredentials):
         return hashlib.sha1(text.encode('ascii')).hexdigest()
 
     def __str__(self):
-        return '{}:{}'.format(self.user, self.password)
+        return '{}:{}'.format(self.username, self.password)

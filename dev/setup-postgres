@@ -1,0 +1,29 @@
+#!/bin/sh
+
+DATABASES="
+    basic-auth
+    basic-auth-test
+"
+
+echo "Creating ${USER} role..."
+if ! echo | psql postgres 2>/dev/null; then
+    sudo -u postgres createuser -e "${USER}" --createdb --createrole 2>/dev/null
+fi
+if [ $? -eq 0 ]; then
+    echo "DONE."
+else
+    echo "FAILED!"
+    exit 1;
+fi
+
+echo "Creating fresh databases..."
+for database in $DATABASES; do
+    dropdb --if-exists "${database}" 2>/dev/null
+    createdb "${database}"
+done
+if [ $? -eq 0 ]; then
+    echo "DONE."
+else
+    echo "FAILED!"
+    exit 1;
+fi

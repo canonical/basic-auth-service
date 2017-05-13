@@ -1,9 +1,11 @@
 *.pyc
 *.pyo
-/build
 *.egg-info
 .eggs
 .pybuild
 .coverage
 .tox
 .cache
+/build
+/alembic.ini
+/config.yaml

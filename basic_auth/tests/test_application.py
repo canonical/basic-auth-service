@@ -11,7 +11,7 @@ from ..application import (
     setup_api_application,
     setup_auth_check_application
 )
-from ..collection import CredentialsCollection
+from ..collection import MemoryCredentialsCollection
 
 
 class AuthCheckMiddlewareFactory(BaseBasicAuthMiddlewareFactory):
@@ -52,7 +52,7 @@ class BasicAuthCheckApplicationTest(AioHTTPTestCase):
 class SetupAPIApplicationTest(APIApplicationTestCase):
 
     async def get_application(self):
-        return setup_api_application(CredentialsCollection())
+        return setup_api_application(MemoryCredentialsCollection())
 
     @unittest_run_loop
     async def test_setup_api_application(self):
@@ -66,7 +66,7 @@ class SetupAPIApplicationTest(APIApplicationTestCase):
 class SetupAuthCheckApplicationTest(AioHTTPTestCase):
 
     async def get_application(self):
-        return setup_auth_check_application(CredentialsCollection())
+        return setup_auth_check_application(MemoryCredentialsCollection())
 
     @unittest_run_loop
     async def test_setup_auth_check_application(self):

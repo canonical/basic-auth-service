@@ -1,8 +1,27 @@
 swagger: '2.0'
 info:
-  description: Basic-auth service API
   version: '1.0'
   title: Basic-auth service API
+  description: >
+    The basic-auth service provides a REST API to manage HTTP
+    Basic-Authentication credentials.
+
+
+    Requests must be performed with `Content-Type: application/json;
+    version=1.0`; if the request requires a payload, it must be in JSON format.
+
+
+    Requests to the service must be authenticated with Basic-Autentication, for
+    example:
+
+
+    ```
+
+    POST http://<user>:<password>@<hostname>/api/credentials/
+
+    {"user": "a-user"}
+
+    ```
 host: esm.ubuntu.com
 basePath: /api
 tags:
@@ -16,7 +35,13 @@ paths:
       tags:
         - credentials
       summary: Create basic-auth credentials for a user
-      description: Create basic-auth user and password for a user
+      description: >
+        Create basic-auth user and password for a user.
+
+
+        The `token` field in the request body is optional; if provided it must
+        be in the form `username:password`, otherwise it's automatically
+        generated and included in the response.
       operationId: addCredentials
       consumes:
         - application/json
@@ -70,7 +95,13 @@ paths:
       tags:
         - credentials
       summary: Update or generate new credentials for a user
-      description: Update or generate new credentials for a user
+      description: >
+        Update or generate new credentials for an existing user.
+
+
+        The `token` field in the request body is optional; if provided it must
+        be in the form `username:password`, otherwise it's automatically
+        generated and included in the response. 
       operationId: updateCredentials
       consumes:
         - application/json
@@ -128,6 +159,9 @@ definitions:
       token:
         type: string
         description: 'Optional user token in the "<username>:<password>" form'
+    example:
+      user: a-user
+      token: 'foo:bar'
   CreateCredentials:
     type: object
     properties:
@@ -137,12 +171,17 @@ definitions:
       token:
         type: string
         description: 'Optional user token in the "<username>:<password>" form'
+    example:
+      user: a-user
+      token: 'foo:bar'
   UpdateCredentials:
     type: object
     properties:
       token:
         type: string
         description: 'Optional user token in the "<username>:<password>" form'
+    example:
+      token: 'foo:bar'
   EmptyResponse:
     type: object
   APIError:

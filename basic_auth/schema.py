@@ -2,13 +2,15 @@
 
 import colander
 
+from .credential import BasicAuthCredentials
+
 
 def valid_basic_auth(node, value):
     """Validator for Basic-Auth tokens."""
-    split = value.split(':')
-    if len(split) != 2 or '' in split:
-        raise colander.Invalid(
-            node, 'Token must be in the form "<user>:<password>"')
+    try:
+        BasicAuthCredentials.from_token(value)
+    except ValueError as error:
+        raise colander.Invalid(node, str(error))
 
 
 class CredentialsCreateSchema(colander.MappingSchema):
