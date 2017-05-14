@@ -7,7 +7,7 @@ and tools dependencies separated.
 
 ## Running the server
 
-Run the server with `tox -e run`
+Run the server with `tox -e run <config-file>`.
 
 
 ## Runing tests
