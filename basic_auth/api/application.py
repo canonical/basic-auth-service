@@ -44,7 +44,7 @@ class ResourceEndpoint:
         func = getattr(
             self.resource, self._collection_methods_map[request.method])
         try:
-            result = func(payload)
+            result = await func(payload)
         except Exception as error:
             return to_api_error(error)
 
@@ -67,7 +67,7 @@ class ResourceEndpoint:
         func = getattr(
             self.resource, self._instance_methods_map[request.method])
         try:
-            content = func(instance_id, payload)
+            content = await func(instance_id, payload)
         except Exception as error:
             return to_api_error(error)
 
@@ -114,7 +114,7 @@ class APIApplication(web.Application):
             name='instance')
 
     def _wrap_handle_instance(self, handle_instance):
-        """Wrap handle_instance handler to pass the id as parameter."""
+        """Wrap handle_instance handler to pass the ID as parameter."""
 
         @wraps(handle_instance)
         async def wrapper(request):

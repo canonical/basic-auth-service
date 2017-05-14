@@ -50,13 +50,13 @@ class ResourceEndpointTest(APITestCase):
     async def test_handle_collection_other(self):
         """Non-create methods return Ok if the operation has success."""
         content = {'id': 'foo', 'value': 'bar'}
-        self.collection.create(content)
+        await self.collection.create(content)
 
         # Add a non-create method on the resource
         self.endpoint.collection_methods = frozenset(['GET'])
         self.endpoint._collection_methods_map = {'GET': 'get_collection'}
 
-        def get_collection(request):
+        async def get_collection(request):
             return [content]
 
         self.resource.get_collection = get_collection
@@ -95,7 +95,7 @@ class ResourceEndpointTest(APITestCase):
     async def test_handle_instance(self):
         """Allowed methods can be called on handle_instance."""
         content = {'id': 'foo', 'value': 'bar'}
-        self.collection.create(content)
+        await self.collection.create(content)
         request = self.get_request()
         response = await self.endpoint.handle_instance(request, 'foo')
         self.assertEqual(200, response.status)
@@ -189,7 +189,7 @@ class APIApplicationTest(APIApplicationTestCase):
     async def test_request_instance(self):
         """A request to the instance URL calls the appropriate handler."""
         content = {'id': 'foo', 'value': 'bar'}
-        self.collection.create(content)
+        await self.collection.create(content)
         await self.client_request(
             method='POST', path='/sample', json=content)
         response = await self.client_request(path='/sample/foo')

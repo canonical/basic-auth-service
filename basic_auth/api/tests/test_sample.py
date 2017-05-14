@@ -1,4 +1,4 @@
-from unittest import TestCase
+import asynctest
 
 from ..sample import SampleResourceCollection
 from ..error import (
@@ -8,62 +8,61 @@ from ..error import (
 )
 
 
-class SampleResourceCollectionTest(TestCase):
+class SampleResourceCollectionTest(asynctest.TestCase):
 
     def setUp(self):
         super().setUp()
         self.collection = SampleResourceCollection()
 
-    def test_create(self):
+    async def test_create(self):
         """Resources can be created in the collection."""
         data = {'id': 'foo', 'bar': 'baz'}
-        res_id, details = self.collection.create(data)
+        res_id, details = await self.collection.create(data)
         self.assertEqual('foo', res_id)
         self.assertEqual(data, details)
         self.assertEqual({'foo': {'bar': 'baz'}}, self.collection.items)
 
-    def test_create_duplicated(self):
+    async def test_create_duplicated(self):
         """Trying to create a resource with an existing ID raises an error."""
-        self.collection.create({'id': 'foo', 'bar': 'baz'})
-        self.assertRaises(
-            ResourceAlreadyExists,
-            self.collection.create, {'id': 'foo', 'boo': 'bza'})
+        await self.collection.create({'id': 'foo', 'bar': 'baz'})
+        with self.assertRaises(ResourceAlreadyExists):
+            await self.collection.create({'id': 'foo', 'boo': 'bza'})
 
-    def test_create_missing_id(self):
+    async def test_create_missing_id(self):
         """If the "id" is missing from details, an error is raised."""
-        self.assertRaises(
-            InvalidResourceDetails, self.collection.create, {'foo': 'bar'})
+        with self.assertRaises(InvalidResourceDetails):
+            await self.collection.create({'foo': 'bar'})
 
-    def test_delete(self):
+    async def test_delete(self):
         """A resouce can be deleted by ID."""
-        self.collection.create({'id': 'foo', 'bar': 'baz'})
-        self.collection.delete('foo')
+        await self.collection.create({'id': 'foo', 'bar': 'baz'})
+        await self.collection.delete('foo')
         self.assertEqual({}, self.collection.items)
 
-    def test_delete_not_found(self):
+    async def test_delete_not_found(self):
         """An error is raised if the ID is not found when deleting."""
-        self.assertRaises(
-            ResourceNotFound, self.collection.delete, "foo")
+        with self.assertRaises(ResourceNotFound):
+            await self.collection.delete("foo")
 
-    def test_get(self):
+    async def test_get(self):
         """Resources can be retrieved from the collection."""
         element = {'id': 'foo', 'bar': 'baz'}
-        self.collection.create(element)
-        self.assertEqual(element, self.collection.get('foo'))
+        await self.collection.create(element)
+        self.assertEqual(element, await self.collection.get('foo'))
 
-    def test_get_not_found(self):
+    async def test_get_not_found(self):
         """An error is raised if the ID is not found."""
-        self.assertRaises(
-            ResourceNotFound, self.collection.delete, "foo")
+        with self.assertRaises(ResourceNotFound):
+            await self.collection.delete("foo")
 
-    def test_update(self):
+    async def test_update(self):
         """A resource can be updated."""
         element = {'id': 'foo', 'bar': 'baz'}
-        self.collection.create(element)
-        updated = self.collection.update('foo', {'bar': 'new'})
+        await self.collection.create(element)
+        updated = await self.collection.update('foo', {'bar': 'new'})
         self.assertEqual({'id': 'foo', 'bar': 'new'}, updated)
 
-    def test_update_not_found(self):
+    async def test_update_not_found(self):
         """An error is raised if the ID is not found when updating."""
-        self.assertRaises(
-            ResourceNotFound, self.collection.update, "foo", {'bar': 'new'})
+        with self.assertRaises(ResourceNotFound):
+            await self.collection.update("foo", {'bar': 'new'})

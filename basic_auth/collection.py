@@ -11,17 +11,17 @@ class CredentialsCollection(SampleResourceCollection):
     def __init__(self):
         super().__init__(id_field='user')
 
-    def create(self, details):
+    async def create(self, details):
         if not details['token']:
             details['token'] = str(BasicAuthCredentials.generate())
-        return super().create(details)
+        return await super().create(details)
 
-    def update(self, resource_id, details):
+    async def update(self, resource_id, details):
         if not details['token']:
             details['token'] = str(BasicAuthCredentials.generate())
-        return super().update(resource_id, details)
+        return await super().update(resource_id, details)
 
-    def credentials_match(self, user, password):
+    async def credentials_match(self, user, password):
         """Return whether the provided user/password match."""
         credentials = [details['token'] for details in self.items.values()]
         return '{}:{}'.format(user, password) in credentials

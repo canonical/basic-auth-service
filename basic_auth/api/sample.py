@@ -32,7 +32,7 @@ class SampleResourceCollection(ResourceCollection):
         self.id_field = id_field
         self.items = {}
 
-    def create(self, details):
+    async def create(self, details):
         resource_details = deepcopy(details)
         try:
             res_id = resource_details.pop(self.id_field)
@@ -45,17 +45,17 @@ class SampleResourceCollection(ResourceCollection):
         # Retruned details include the resource ID
         return res_id, details
 
-    def delete(self, res_id):
+    async def delete(self, res_id):
         try:
             del self.items[res_id]
         except KeyError:
             raise ResourceNotFound(res_id)
 
-    def get(self, res_id):
+    async def get(self, res_id):
         item = self._get(res_id)
         return self._copy_and_add_id(res_id, item)
 
-    def update(self, res_id, details):
+    async def update(self, res_id, details):
         item = self._get(res_id)
         item.update(details)
 
