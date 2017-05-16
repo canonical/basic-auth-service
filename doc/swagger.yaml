@@ -15,6 +15,8 @@ info:
     example:
 
 
+    Request:
+
     ```
 
     POST http://<user>:<password>@<hostname>/api/credentials/
@@ -22,7 +24,14 @@ info:
     {"user": "a-user"}
 
     ```
-host: esm.ubuntu.com
+
+    Response:
+
+    ```
+
+    {"user": "a-user", "token": "sdjfailksjlasdfr3f34f"}
+
+    ```
 basePath: /api
 tags:
   - name: credentials
@@ -98,10 +107,13 @@ paths:
       description: >
         Update or generate new credentials for an existing user.
 
-
         The `token` field in the request body is optional; if provided it must
         be in the form `username:password`, otherwise it's automatically
-        generated and included in the response. 
+        generated and included in the response.
+
+        If no token is specified, an empty body `{}` must be provided in the
+        request.
+      
       operationId: updateCredentials
       consumes:
         - application/json
@@ -132,7 +144,10 @@ paths:
       tags:
         - credentials
       summary: Deletes credentials for a user
-      description: Delete basic-auth credentials for a user
+      description: >
+        Delete basic-auth credentials for a user.
+
+        An empty body `{}` must be specified in the request.
       operationId: deleteCredentials
       parameters:
         - name: userId
