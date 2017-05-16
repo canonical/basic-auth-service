@@ -8,6 +8,8 @@ and an endpoint for validating credentials provided in a request.
 
 The rest API for managing credentials is availabile at the `/api` endpoint.
 
+See the [API docs](API.md) for details on API calls.
+
 
 ## Authentication validation
 
