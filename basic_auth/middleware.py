@@ -12,7 +12,7 @@ class BaseBasicAuthMiddlewareFactory:
     def __init__(self, realm):
         self.realm = realm
 
-    def is_valid_auth(self, user, password):
+    async def is_valid_auth(self, user, password):
         """Return whether the basic authentication si valid.
 
         It should be overridden by subclasses.
@@ -23,7 +23,7 @@ class BaseBasicAuthMiddlewareFactory:
         """Return the middleware handler."""
 
         async def middleware_handler(request):
-            if not self._validate_auth(request):
+            if not await self._validate_auth(request):
                 headers = {
                     'WWW-Authenticate': 'Basic realm="{}"'.format(self.realm)}
                 return web.HTTPUnauthorized(headers=headers)
@@ -32,22 +32,28 @@ class BaseBasicAuthMiddlewareFactory:
 
         return middleware_handler
 
-    def _validate_auth(self, request):
+    async def _validate_auth(self, request):
         """Validate Basic-Auth in a request."""
         basic_auth = request.headers.get('Authorization')
         if not basic_auth:
             return False
 
         auth = BasicAuth.decode(basic_auth)
-        return self.is_valid_auth(auth.login, auth.password)
+        return await self.is_valid_auth(auth.login, auth.password)
 
 
 class BasicAuthMiddlewareFactory(BaseBasicAuthMiddlewareFactory):
-    """Basic-Auth middleware fetching authentication from a collection."""
+    """Basic-Auth middleware using a checker method to verify credentials
 
-    def __init__(self, realm, collection):
+    The checker function signature is as follows:
+
+      async def checker(user, password) -> bool
+
+    """
+
+    def __init__(self, realm, checker):
         super().__init__(realm)
-        self.collection = collection
+        self.checker = checker
 
-    def is_valid_auth(self, user, password):
-        return self.collection.credentials_match(user, password)
+    async def is_valid_auth(self, user, password):
+        return await self.checker(user, password)

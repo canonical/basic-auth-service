@@ -3,13 +3,18 @@
 from collections import namedtuple
 
 from ..credential import BasicAuthCredentials
-from .schema import CREDENTIALS
+from .schema import (
+    CREDENTIALS,
+    API_CREDENTIALS,
+)
 
 
 # Database fields
 CREDENTIALS_FIELDS = ('user', 'username', 'password')
+API_CREDENTIALS_FIELDS = ('username', 'password', 'description')
 
-Credentials = namedtuple('Credentials', ['user', 'auth'])
+Credentials = namedtuple('Credentials', ('user', 'auth'))
+APICredentials = namedtuple('APIUser', API_CREDENTIALS_FIELDS)
 
 
 class Model:
@@ -46,9 +51,10 @@ class Model:
 
     async def update_credentials(self, user, username, password):
         """Update user credentials."""
-        await self._conn.execute(
+        result = await self._conn.execute(
             CREDENTIALS.update().where(CREDENTIALS.c.user == user).values(
                 username=username, password=password))
+        return bool(result.rowcount)
 
     async def is_known_user(self, user):
         """Return whether credentials exist for the specified user."""
@@ -60,4 +66,27 @@ class Model:
     async def remove_credentials(self, user):
         """Remove credentials for the specified user."""
         query = CREDENTIALS.delete().where(CREDENTIALS.c.user == user)
-        await self._conn.execute(query)
+        result = await self._conn.execute(query)
+        return bool(result.rowcount)
+
+    async def add_api_credentials(self, username, password, description=None):
+        """Add credentials for an API user."""
+        await self._conn.execute(
+            API_CREDENTIALS.insert().values(
+                username=username, password=password, description=description))
+
+    async def get_api_credentials(self, username):
+        """Return credentials for an API user."""
+        result = await self._conn.execute(
+            API_CREDENTIALS.select().where(
+                API_CREDENTIALS.c.username == username))
+        row = await result.fetchone()
+        if row is not None:
+            return APICredentials(
+                row['username'], row['password'], row['description'])
+
+    async def remove_api_credentials(self, username):
+        query = API_CREDENTIALS.delete().where(
+            API_CREDENTIALS.c.username == username)
+        result = await self._conn.execute(query)
+        return bool(result.rowcount)

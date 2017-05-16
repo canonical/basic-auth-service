@@ -9,6 +9,7 @@ from ..api.error import (
     ResourceAlreadyExists,
     ResourceNotFound,
 )
+from ..db import Model
 from ..db.testing import DataBaseTest
 
 
@@ -115,6 +116,7 @@ class DataBaseCredentialsCollectionTest(DataBaseTest,
 
     async def setUp(self):
         await super().setUp()
+        self.model = Model(self.conn)
         self.collection = DataBaseCredentialsCollection(self.engine)
 
     async def test_rollback_on_error(self):
@@ -125,3 +127,17 @@ class DataBaseCredentialsCollectionTest(DataBaseTest,
         details = await self.collection.get('foo')
         # The token is not updated
         self.assertEqual('foo:bar', details['token'])
+
+    async def test_api_credentials_match_true(self):
+        """api_credentials_match returns True if API credentials match."""
+        await self.model.add_api_credentials('foo', 'bar')
+        # need to commit explicitly since collection methods run a separate
+        # transaction
+        await self.txn.commit()
+        self.assertTrue(
+            await self.collection.api_credentials_match('foo', 'bar'))
+
+    async def test_api_credentials_match_false(self):
+        """api_credentials_match returns False if no match is found."""
+        self.assertFalse(
+            await self.collection.api_credentials_match('foo', 'bar'))

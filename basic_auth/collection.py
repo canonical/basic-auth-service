@@ -14,6 +14,9 @@ from .api.error import (
 class MemoryCredentialsCollection(SampleResourceCollection):
     """An in-memory Collection for Basic-Auth credentials."""
 
+    # Valid credentials for API access.
+    VALID_API_CREDENTIALS = ('user', 'pass')
+
     def __init__(self):
         super().__init__(id_field='user')
 
@@ -33,6 +36,10 @@ class MemoryCredentialsCollection(SampleResourceCollection):
         """Return whether the provided user/password match."""
         credentials = [details['token'] for details in self.items.values()]
         return '{}:{}'.format(username, password) in credentials
+
+    async def api_credentials_match(self, username, password):
+        """Return whether API credentials match."""
+        return (username, password) == self.VALID_API_CREDENTIALS
 
     def _check_duplicated_username(self, user, username):
         """Raise InvalidResourceDetails if the username is already used."""
@@ -63,10 +70,9 @@ class DataBaseCredentialsCollection(ResourceCollection):
     @transact
     async def delete(self, model, user):
         """Delete credentials for a user."""
-        if not await model.is_known_user(user):
+        removed = await model.remove_credentials(user)
+        if not removed:
             raise ResourceNotFound(user)
-
-        await model.remove_credentials(user)
 
     @transact
     async def get(self, model, user):
@@ -79,6 +85,7 @@ class DataBaseCredentialsCollection(ResourceCollection):
 
     @transact
     async def update(self, model, user, details):
+        """Update credentials for a user."""
         if not await model.is_known_user(user):
             raise ResourceNotFound(user)
 
@@ -89,11 +96,21 @@ class DataBaseCredentialsCollection(ResourceCollection):
 
     @transact
     async def credentials_match(self, model, username, password):
+        """Check if username and password match known credentials."""
         credentials = await model.get_credentials(username=username)
         if credentials is None:
             return False
 
         return password == credentials.auth.password
+
+    @transact
+    async def api_credentials_match(self, model, username, password):
+        """Check if username and password match known API credentials."""
+        credentials = await model.get_api_credentials(username)
+        if credentials is None:
+            return False
+
+        return password == credentials.password
 
     async def _check_duplicated_username(self, model, user, username):
         """Raise InvalidResourceDetails if the username is already used."""

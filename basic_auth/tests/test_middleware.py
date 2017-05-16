@@ -1,5 +1,3 @@
-import unittest
-
 from aiohttp import web
 
 import asynctest
@@ -17,7 +15,7 @@ class SampleBasicAuthMiddlewareFactory(BaseBasicAuthMiddlewareFactory):
         super().__init__(realm)
         self.calls = []
 
-    def is_valid_auth(self, user, password):
+    async def is_valid_auth(self, user, password):
         self.calls.append((user, password))
         return (user, password) == ('user', 'pass')
 
@@ -27,7 +25,7 @@ class SampleCollection:
     def __init__(self):
         self.calls = []
 
-    def credentials_match(self, user, password):
+    async def credentials_match(self, user, password):
         self.calls.append((user, password))
         return (user, password) == ('user', 'pass')
 
@@ -41,11 +39,10 @@ class BaseBasicAuthMiddlewareFactoryTest(HandlerTestCase):
     def create_app(self):
         return web.Application(middlewares=[self.middleware])
 
-    @asynctest.fail_on(unused_loop=False)
-    def test_is_valid_auth_default(self):
-        """By default is_valid_auth returns false."""
+    async def test_is_valid_auth_default(self):
+        """By default is_valid_auth returns False."""
         middleware = BaseBasicAuthMiddlewareFactory('realm')
-        self.assertFalse(middleware.is_valid_auth('user', 'pass'))
+        self.assertFalse(await middleware.is_valid_auth('user', 'pass'))
 
     async def test_no_auth_set(self):
         """If no authentication is set, Unauthorized is returned."""
@@ -100,12 +97,24 @@ class BaseBasicAuthMiddlewareFactoryTest(HandlerTestCase):
         self.assertEqual([('user', 'pass')], self.middleware.calls)
 
 
-class BasicAuthMiddlewareFactoryTest(unittest.TestCase):
+class BasicAuthMiddlewareFactoryTest(asynctest.TestCase):
 
-    def test_validate_credentials(self):
-        """is_valid_auth calls the validation from the Collection."""
-        collection = SampleCollection()
-        middleware = BasicAuthMiddlewareFactory('realm', collection)
-        self.assertFalse(middleware.is_valid_auth('foo', 'bar'))
-        self.assertTrue(middleware.is_valid_auth('user', 'pass'))
-        self.assertEqual([('foo', 'bar'), ('user', 'pass')], collection.calls)
+    def setUp(self):
+        super().setUp()
+        self.calls = []
+
+        async def checker(user, password):
+            self.calls.append((user, password))
+            return (user, password) == ('user', 'pass')
+
+        self.middleware = BasicAuthMiddlewareFactory('realm', checker)
+
+    async def test_validate_credentials_true(self):
+        """is_valid_auth returns True if the credentials check passes."""
+        self.assertTrue(await self.middleware.is_valid_auth('user', 'pass'))
+        self.assertEqual([('user', 'pass')], self.calls)
+
+    async def test_validate_credentials_false(self):
+        """is_valid_auth returns False if the credentials check fails."""
+        self.assertFalse(await self.middleware.is_valid_auth('foo', 'bar'))
+        self.assertEqual([('foo', 'bar')], self.calls)

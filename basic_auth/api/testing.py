@@ -1,6 +1,9 @@
 from aiohttp.test_utils import AioHTTPTestCase
 
-from ..testing import HandlerTestCase
+from ..testing import (
+    HandlerTestCase,
+    basic_auth_header,
+)
 
 
 API_CONTENT_TYPE = 'application/json;version=1.0'
@@ -20,8 +23,11 @@ class APITestCase(HandlerTestCase):
 
 class APIApplicationTestCase(AioHTTPTestCase):
 
-    async def client_request(self, method='GET', path='/', **kwargs):
+    async def client_request(self, method='GET', path='/', auth=None,
+                             **kwargs):
         """Make a request through the client."""
         headers = kwargs.setdefault('headers', {})
         headers['Content-Type'] = API_CONTENT_TYPE
+        if auth is not None:
+            headers.update(basic_auth_header(*auth))
         return await self.client.request(method, path, **kwargs)

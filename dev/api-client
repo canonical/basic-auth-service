@@ -2,6 +2,8 @@
 
 """API client for the basic-auth service."""
 
+import sys
+import os
 import argparse
 import json
 
@@ -18,10 +20,18 @@ ACTIONS = {
 def detail_type(detail):
     """Split details in key/value pairs."""
     split = detail.split('=')
-    if len(split) != 2:
+    if len(split) != 2 or not all(split):
         raise argparse.ArgumentTypeError(
             'Details must be in the form "key=value"')
     return split
+
+
+def basic_auth_type(auth):
+    split = auth.split(':')
+    if len(split) != 2 or not all(split):
+        raise argparse.ArgumentTypeError(
+            'Basic auth must be in the form "user:password"')
+    return tuple(split)
 
 
 class DetailsAction(argparse.Action):
@@ -39,6 +49,11 @@ def parse_args():
         '--url', help='The API endpoint URL',
         default='http://localhost:8080/api')
     parser.add_argument(
+        '--creds', type=basic_auth_type,
+        help=('Basic-auth user for the API endpoint. Alternatively, the '
+              'BASIC_AUTH_API_CREDS environment can be set.'),
+        default=os.environ.get('BASIC_AUTH_API_CREDS'))
+    parser.add_argument(
         'resource', help='The resource to operate on',
         choices=['credentials'])
 
@@ -48,19 +63,24 @@ def parse_args():
     for action in ACTIONS:
         subparser = subparsers.add_parser(
             action, help='{} a resource'.format(action.capitalize()))
-        if action == 'add':
+        if action != 'add':
+            subparser.add_argument('id', help='The resource identifier')
+        if action in ('add', 'update'):
+            nargs = '+' if action == 'add' else '*'
             subparser.add_argument(
                 'details', help='Request details, in the "key=value" format',
-                type=detail_type, action=DetailsAction, nargs='+')
-        else:
-            subparser.add_argument('id', help='The resource identifier')
+                type=detail_type, action=DetailsAction, nargs=nargs)
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
-    response = make_request(args)
-    print_response(response)
+    try:
+        response = make_request(args)
+    except requests.ConnectionError as error:
+        sys.exit(str(error))
+    else:
+        print_response(response)
 
 
 def make_request(args):
@@ -72,8 +92,9 @@ def make_request(args):
     headers = {'Content-Type': 'application/json;version=1.0'}
 
     details = getattr(args, 'details', None)
-    data = json.dumps(details) if details else None
-    return requests.request(method, url, headers=headers, data=data)
+    data = json.dumps(details) if details is not None else None
+    return requests.request(
+        method, url, headers=headers, data=data, auth=args.creds)
 
 
 def print_response(response):

@@ -16,7 +16,7 @@ from ..collection import MemoryCredentialsCollection
 
 class AuthCheckMiddlewareFactory(BaseBasicAuthMiddlewareFactory):
 
-    def is_valid_auth(self, user, password):
+    async def is_valid_auth(self, user, password):
         if (user, password) == ('user', 'pass'):
             return True
         return False
@@ -59,8 +59,17 @@ class SetupAPIApplicationTest(APIApplicationTestCase):
         """An application for the API is set up."""
         content = {"user": "foo", "token": "user:pass"}
         response = await self.client_request(
-            method='POST', path='/credentials', json=content)
+            method='POST', path='/credentials', json=content,
+            auth=('user', 'pass'))
         self.assertEqual(content, await response.json())
+
+    @unittest_run_loop
+    async def test_basic_auth_required(self):
+        """The API application requires basic auth."""
+        content = {"user": "foo", "token": "user:pass"}
+        response = await self.client_request(
+            method='POST', path='/credentials', json=content)
+        self.assertEqual(401, response.status)
 
 
 class SetupAuthCheckApplicationTest(AioHTTPTestCase):
