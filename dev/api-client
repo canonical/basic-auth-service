@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+
+"""API client for the basic-auth service."""
+
+import argparse
+import json
+
+import requests
+
+
+ACTIONS = {
+    'add': 'post',
+    'remove': 'delete',
+    'get': 'get',
+    'update': 'put'}
+
+
+def detail_type(detail):
+    """Split details in key/value pairs."""
+    split = detail.split('=')
+    if len(split) != 2:
+        raise argparse.ArgumentTypeError(
+            'Details must be in the form "key=value"')
+    return split
+
+
+class DetailsAction(argparse.Action):
+    """Save details as a dict."""
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        setattr(namespace, self.dest, dict(values))
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument(
+        '--url', help='The API endpoint URL',
+        default='http://localhost:8080/api')
+    parser.add_argument(
+        'resource', help='The resource to operate on',
+        choices=['credentials'])
+
+    subparsers = parser.add_subparsers(
+        help='The action to perform', dest='action')
+    subparsers.required = True
+    for action in ACTIONS:
+        subparser = subparsers.add_parser(
+            action, help='{} a resource'.format(action.capitalize()))
+        if action == 'add':
+            subparser.add_argument(
+                'details', help='Request details, in the "key=value" format',
+                type=detail_type, action=DetailsAction, nargs='+')
+        else:
+            subparser.add_argument('id', help='The resource identifier')
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
+    response = make_request(args)
+    print_response(response)
+
+
+def make_request(args):
+    """Make an API request."""
+    method = ACTIONS[args.action]
+    url = '{}/{}'.format(args.url, args.resource)
+    if args.action != 'add':
+        url += '/' + args.id
+    headers = {'Content-Type': 'application/json;version=1.0'}
+
+    details = getattr(args, 'details', None)
+    data = json.dumps(details) if details else None
+    return requests.request(method, url, headers=headers, data=data)
+
+
+def print_response(response):
+    if response.headers['Content-Type'].startswith('application/json'):
+        content = response.json()
+    else:
+        content = response.text
+    print('{} {} - {}'.format(response.status_code, response.reason, content))
+
+
+if __name__ == '__main__':
+    main()
