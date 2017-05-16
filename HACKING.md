@@ -9,6 +9,9 @@ and tools dependencies separated.
 
 Run the server with `tox -e run`.
 
+A simple client to interact with the server API is available at
+`dev/api-client`.
+
 
 ## Runing tests
 
