@@ -14,7 +14,7 @@ Payload for API requests and response is JSON, and the Content-Type for requests
 An example call to create a user is the following:
 
 ```
-curl -H 'Content-Type: application/json;version=1.0' -X POST http://user:pass@hostname/api/credentials/ -d '{"user": "foo"}'
+curl -H 'Content-Type: application/json;version=1.0' -X POST http://user:pass@hostname/api/credentials -d '{"user": "foo"}'
 ```
 
 
