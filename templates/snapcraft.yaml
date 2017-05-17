@@ -1,0 +1,25 @@
+name: basic-auth-service
+version: 0.1-git+{{ git_hash }}
+summary: Service for HTTP basic-authentication
+description: |
+  The service provides an endpoint for basic-authentication credentials
+  verification, and a REST API to manage credentials.
+confinement: strict
+grade: devel
+
+apps:
+  basic-auth-service:
+    command: bin/basic-auth ${SNAP_DATA}/config.yaml
+    daemon: simple
+    plugs: [network-bind]
+
+  alembic:
+    command: bin/alembic
+    plugs: [network-bind]
+
+parts:
+    basic-auth:
+      plugin: python
+      source: .
+      requirements: {{ snap_requirements }}
+      build-packages: [gcc, libpq-dev]

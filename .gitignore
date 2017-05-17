@@ -9,3 +9,5 @@
 /build
 /alembic.ini
 /config.yaml
+/snapcraft.yaml
+/basic-auth-service_*
