@@ -6,10 +6,29 @@ and an endpoint for validating credentials provided in a request.
 
 ## REST API
 
-The rest API for managing credentials is availabile at the `/api` endpoint.
+The REST API for managing credentials is availabile at the `/api` endpoint.
 
 See the [API docs](API.md) for details on API calls.
 
+### API credentials
+
+The REST API requires basic-authentication for access.
+
+Credentials for API access can be managed with the `manage-credentials` script.
+This allows adding, removing and listing credentials.
+As an example:
+
+```bash
+$ ./manage-credentials add myuser mysecret --description 'a user'
+$ ./manage-credentials list
++----------+----------+-------------+
+| Username | Password | Description |
++----------+----------+-------------+
+| myuser   | mysecret | a user      |
++----------+----------+-------------+
+$ ./manage-credentials remove myuser
+Action succeeded
+```
 
 ## Authentication validation
 
