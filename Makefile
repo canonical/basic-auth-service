@@ -1,4 +1,5 @@
-VE_DIR = .tox/py35
+VE = run
+VE_DIR = .tox/$(VE)
 
 POSTGRES_URI := postgresql:///basic-auth
 
@@ -53,4 +54,4 @@ config.yaml: templates/config.yaml
 
 
 $(VE_DIR):
-	tox -e py35
+	tox -e $(VE)
