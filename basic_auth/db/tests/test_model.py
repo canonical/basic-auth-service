@@ -83,7 +83,7 @@ class ModelTest(DataBaseTest):
         credentials = await self.model.get_api_credentials('username')
         self.assertEqual('username', credentials.username)
         self.assertEqual('pass', credentials.password)
-        self.assertIsNone(credentials.description)
+        self.assertEqual('', credentials.description)
 
     async def test_add_api_credentials_with_description(self):
         """A description can be added for API user credentials."""
@@ -92,6 +92,13 @@ class ModelTest(DataBaseTest):
         credentials = await self.model.get_api_credentials('username')
         self.assertEqual('a user', credentials.description)
 
+    async def test_add_api_credentials_with_description_none(self):
+        """If description is None, it's saved as empty string."""
+        await self.model.add_api_credentials(
+            'username', 'pass', description=None)
+        credentials = await self.model.get_api_credentials('username')
+        self.assertEqual('', credentials.description)
+
     async def test_get_api_credentials(self):
         """Credentials for an API user can be retrieved."""
         await self.model.add_api_credentials('username', 'pass')
@@ -99,7 +106,7 @@ class ModelTest(DataBaseTest):
         credentials = await self.model.get_api_credentials('username')
         self.assertEqual('username', credentials.username)
         self.assertEqual('pass', credentials.password)
-        self.assertIsNone(credentials.description)
+        self.assertEqual('', credentials.description)
 
     async def test_remove_api_credentials(self):
         """API user credentials can be removed."""
@@ -111,3 +118,16 @@ class ModelTest(DataBaseTest):
     async def test_remove_api_credentials_not_found(self):
         """If username is unknown, remove_api_credentials returns False."""
         self.assertFalse(await self.model.remove_api_credentials('username'))
+
+    async def test_get_all_api_credentials(self):
+        """It's possible to get all API credentials."""
+        await self.model.add_api_credentials('username1', 'pass1')
+        await self.model.add_api_credentials(
+            'username2', 'pass2', description='second user')
+        cred1, cred2 = await self.model.get_all_api_credentials()
+        self.assertEqual('username1', cred1.username)
+        self.assertEqual('pass1', cred1.password)
+        self.assertEqual('', cred1.description)
+        self.assertEqual('username2', cred2.username)
+        self.assertEqual('pass2', cred2.password)
+        self.assertEqual('second user', cred2.description)

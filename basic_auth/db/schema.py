@@ -28,5 +28,5 @@ API_CREDENTIALS = Table(
     Column('id', Integer, primary_key=True),
     Column('username', String, nullable=False, unique=True),
     Column('password', String, nullable=False),
-    Column('description', String, nullable=True),
+    Column('description', String, nullable=False, default=''),
 )

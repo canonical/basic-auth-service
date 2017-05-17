@@ -14,6 +14,7 @@ install_requires = [
     'alembic',
     'aiopg',
     'colander',
+    'prettytable',
     'psycopg2',
     'pyYaml',
     'sqlalchemy',
@@ -33,7 +34,8 @@ config = {
     'url': 'https://github.com/CanonicalLtd/basic-auth-service',
     'packages': find_packages(),
     'entry_points': {'console_scripts': [
-        'basic-auth = basic_auth.server:main']},
+        'basic-auth = basic_auth.script.server:main',
+        'manage-credentials = basic_auth.script.manage_credentials:main']},
     'test_suite': 'basic_auth',
     'install_requires': install_requires,
     'tests_require': tests_require,

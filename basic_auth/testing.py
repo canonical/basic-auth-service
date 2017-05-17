@@ -19,10 +19,9 @@ TEST_DB_DSN = 'postgresql:///basic-auth-test'
 
 
 def create_test_config(filename=None, db_dsn=TEST_DB_DSN):
-    """Create a test configuration.
+    """Return a test configuration.
 
-    If filename is given, the configuration is written to file rather than
-    returned as dict.
+    If filename is given, the configuration is also written to file.
 
     """
     config = {
@@ -30,11 +29,10 @@ def create_test_config(filename=None, db_dsn=TEST_DB_DSN):
             'dsn': db_dsn
         }
     }
-    if not filename:
-        return config
-
-    with open(filename, 'w') as fd:
-        yaml.dump(config, stream=fd)
+    if filename:
+        with open(filename, 'w') as fd:
+            yaml.dump(config, stream=fd)
+    return config
 
 
 def basic_auth_header(user, password):

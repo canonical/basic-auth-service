@@ -25,3 +25,13 @@ def transact(meth):
                 return await meth(oself, Model(conn), *args, **kwargs)
 
     return wrapper
+
+
+async def run_in_transaction(engine, model_method, *args, **kwargs):
+    """Run the named Model method in a transaction."""
+    async with engine.acquire() as conn:
+        async with conn.begin():
+            await conn.execute(
+                'SET TRANSACTION ISOLATION LEVEL REPEATABLE READ')
+            meth = getattr(Model(conn), model_method)
+            return await meth(*args, **kwargs)

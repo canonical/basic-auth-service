@@ -58,7 +58,7 @@ def parse_args():
         choices=['credentials'])
 
     subparsers = parser.add_subparsers(
-        help='The action to perform', dest='action')
+        help='The action to perform', dest='action', metavar='action')
     subparsers.required = True
     for action in ACTIONS:
         subparser = subparsers.add_parser(

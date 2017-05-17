@@ -71,6 +71,8 @@ class Model:
 
     async def add_api_credentials(self, username, password, description=None):
         """Add credentials for an API user."""
+        if description is None:
+            description = ''
         await self._conn.execute(
             API_CREDENTIALS.insert().values(
                 username=username, password=password, description=description))
@@ -86,7 +88,17 @@ class Model:
                 row['username'], row['password'], row['description'])
 
     async def remove_api_credentials(self, username):
+        """Remove credentials for an API user."""
         query = API_CREDENTIALS.delete().where(
             API_CREDENTIALS.c.username == username)
         result = await self._conn.execute(query)
         return bool(result.rowcount)
+
+    async def get_all_api_credentials(self):
+        """Return all API credentials."""
+        result = await self._conn.execute(
+            API_CREDENTIALS.select().order_by(API_CREDENTIALS.c.username))
+        return [
+            APICredentials(
+                row['username'], row['password'], row['description'])
+            for row in await result.fetchall()]

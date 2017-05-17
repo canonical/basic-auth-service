@@ -6,13 +6,12 @@ import asynctest
 
 import yaml
 
-from ..testing import create_test_config
 from ..server import (
     parse_args,
-    load_config,
     create_app,
     main,
 )
+from ...testing import create_test_config
 
 
 class ParseArgsTest(fixtures.TestWithFixtures):
@@ -22,25 +21,12 @@ class ParseArgsTest(fixtures.TestWithFixtures):
         tempdir = self.useFixture(fixtures.TempDir())
         file_path = tempdir.join('config.yaml')
         create_test_config(filename=file_path)
-        args = parse_args(args=[file_path])
+        args = parse_args(args=['--config', file_path])
         with closing(args.config):
             config = yaml.load(args.config.read())
         self.assertEqual(
             {'db': {'dsn': 'postgresql:///basic-auth-test'}},
             config)
-
-
-class LoadConfigTest(fixtures.TestWithFixtures):
-
-    def test_load_config(self):
-        """The config is loaded from the file specified by args."""
-        tempdir = self.useFixture(fixtures.TempDir())
-        file_path = tempdir.join('config.yaml')
-        create_test_config(filename=file_path)
-        args = parse_args(args=[file_path])
-        self.assertEqual(
-            {'db': {'dsn': 'postgresql:///basic-auth-test'}},
-            load_config(args))
 
 
 class CreateAppTest(asynctest.TestCase):
@@ -71,12 +57,8 @@ class MainTest(asynctest.TestCase, fixtures.TestWithFixtures):
         await app["db"].wait_closed()
 
     @asynctest.mock.patch("aiohttp.web.run_app")
-    @asynctest.mock.patch("sys.stderr")
-    async def test_main_config_file_required(self, mock_stderr, mock_run_app):
-        self.assertRaises(SystemExit, main, loop=self.loop, raw_args=[])
-
-    @asynctest.mock.patch("aiohttp.web.run_app")
     async def test_main_calls_web_run_app(self, mock_run_app):
+        """The script main runs the web application."""
         self.addCleanup(self._close_db, mock_run_app)
-        main(raw_args=[self.config_path])
+        main(raw_args=['--config', self.config_path])
         self.assertTrue(mock_run_app.called)
