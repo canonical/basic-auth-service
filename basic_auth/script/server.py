@@ -1,6 +1,7 @@
 """Server entry point."""
 
 import argparse
+import logging
 
 from aiohttp import web
 
@@ -14,7 +15,10 @@ from .. import (
 )
 from ..logging import setup_logging
 from ..config import load_config
-from ..collection import DataBaseCredentialsCollection
+from ..collection import (
+    DataBaseCredentialsCollection,
+    MemoryCredentialsCollection,
+)
 from ..application import (
     setup_api_application,
     setup_auth_check_application,
@@ -34,13 +38,23 @@ def parse_args(args=None):
 
 async def create_app(conf, loop=None):
     """Create the base application."""
-    engine = await create_engine(dsn=conf['db']['dsn'], loop=loop)
-    collection = DataBaseCredentialsCollection(engine)
     app = web.Application(middlewares=[web.normalize_path_middleware()])
-    app['db'] = engine
+
+    if conf.get(('app', 'no-db')):
+        collection = MemoryCredentialsCollection()
+    else:
+        engine = await create_engine(dsn=conf['db', 'dsn'], loop=loop)
+        collection = DataBaseCredentialsCollection(engine)
+        app['db'] = engine
+    logging.getLogger().info(
+        'Using collections class: {}'.format(
+            collection.__class__.__name__))
+
     app.router.add_get('/', handler.root)
-    app.add_subapp('/api', setup_api_application(collection))
-    app.add_subapp('/auth-check', setup_auth_check_application(collection))
+    app['subapps'] = {
+        'api': app.add_subapp('/api', setup_api_application(collection)),
+        'auth-check': app.add_subapp(
+            '/auth-check', setup_auth_check_application(collection))}
     return app
 
 

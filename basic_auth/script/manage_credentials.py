@@ -64,7 +64,7 @@ def db_call(args, config, loop=None):
 
     return loop.run_until_complete(
         call_model_method(
-            loop, config['db']['dsn'], method, *method_args))
+            loop, config['db', 'dsn'], method, *method_args))
 
 
 def print_result(result, file=sys.stdout):

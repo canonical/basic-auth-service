@@ -18,6 +18,7 @@ from ..manage_credentials import (
     main,
 )
 from ...testing import create_test_config
+from ...config import Config
 from ...db.testing import (
     TEST_DB_DSN,
     ensure_database,

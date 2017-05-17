@@ -14,12 +14,14 @@ from aiohttp import (
 from aiohttp.helpers import sentinel
 from aiohttp.test_utils import make_mocked_request
 
+from .config import Config
+
 
 TEST_DB_DSN = 'postgresql:///basic-auth-test'
 
 
-def create_test_config(filename=None, db_dsn=TEST_DB_DSN):
-    """Return a test configuration.
+def create_test_config(filename=None, use_db=True, db_dsn=TEST_DB_DSN):
+    """Return a test configuration Config object.
 
     If filename is given, the configuration is also written to file.
 
@@ -29,10 +31,13 @@ def create_test_config(filename=None, db_dsn=TEST_DB_DSN):
             'dsn': db_dsn
         }
     }
+    if not use_db:
+        config['app'] = {'no-db': True}
+
     if filename:
         with open(filename, 'w') as fd:
             yaml.dump(config, stream=fd)
-    return config
+    return Config(config)
 
 
 def basic_auth_header(user, password):
