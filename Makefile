@@ -70,7 +70,8 @@ config.yaml: templates/config.yaml
 	@sed -e 's,{{ db_dsn }},$(POSTGRES_URI),' $< > $@
 
 
+.PHONY: snapcraft.yaml  # force rebuilding it since git revision might have changed
 snapcraft.yaml: GIT_HASH := $(shell git rev-parse --short HEAD)
-snapcraft.yaml: templates/snapcraft.yaml
+snapcraft.yaml:
 	@sed -e 's,{{ git_hash }},$(GIT_HASH),' \
-	-e 's,{{ snap_requirements }},$(SNAP_REQUIREMENTS),' $< > $@
+	-e 's,{{ snap_requirements }},$(SNAP_REQUIREMENTS),' templates/snapcraft.yaml > $@
