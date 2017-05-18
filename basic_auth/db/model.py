@@ -76,6 +76,7 @@ class Model:
         await self._conn.execute(
             API_CREDENTIALS.insert().values(
                 username=username, password=password, description=description))
+        return APICredentials(username, password, description)
 
     async def get_api_credentials(self, username):
         """Return credentials for an API user."""

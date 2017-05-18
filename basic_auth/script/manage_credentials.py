@@ -7,6 +7,8 @@ import prettytable
 
 import uvloop
 
+import psycopg2
+
 from aiopg.sa import create_engine
 
 from ..config import load_config
@@ -40,11 +42,8 @@ def parse_args(args=None):
 
 async def call_model_method(loop, dsn, method, *args, **kwargs):
     """Call the specified Model method with arguments."""
-    engine = await create_engine(dsn=dsn, loop=loop)
-    result = await run_in_transaction(engine, method, *args, **kwargs)
-    engine.terminate()
-    await engine.wait_closed()
-    return result
+    async with create_engine(dsn=dsn, loop=loop) as engine:
+        return await run_in_transaction(engine, method, *args, **kwargs)
 
 
 def db_call(args, config, loop=None):
@@ -70,14 +69,13 @@ def db_call(args, config, loop=None):
 
 def print_result(result, file=sys.stdout):
     """Print result from model call."""
-    if result is None:
+    if isinstance(result, bool):
+        if not result:
+            print('No action performed', file=file)
         return
 
-    if isinstance(result, bool):
-        print(
-            'Action succeeded' if result else 'No action performed',
-            file=file)
-        return
+    if not isinstance(result, list):
+        result = [result]
 
     table = prettytable.PrettyTable(
         field_names=APICredentials._fields,
@@ -93,5 +91,8 @@ def main(loop=None, raw_args=None, file=sys.stdout):
     """Script main."""
     args = parse_args(args=raw_args)
     config = load_config(args)
-    result = db_call(args, config, loop=loop)
+    try:
+        result = db_call(args, config, loop=loop)
+    except psycopg2.IntegrityError:
+        sys.exit('The specified username already exists')
     print_result(result, file=file)

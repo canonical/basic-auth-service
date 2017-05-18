@@ -1,8 +1,9 @@
 from contextlib import closing
 import argparse
+import io
+import textwrap
 import unittest
 from unittest import mock
-import io
 
 import asynctest
 
@@ -115,15 +116,10 @@ class PrintResultTest(unittest.TestCase):
         ensure_database()
         self.stream = io.StringIO()
 
-    def test_print_result_none(self):
-        """If result is None, nothing is printed."""
-        print_result(None, file=self.stream)
-        self.assertEqual('', self.stream.getvalue())
-
     def test_print_result_true(self):
-        """If result is True, a success message is printed."""
+        """If result is True, no message is printed."""
         print_result(True, file=self.stream)
-        self.assertEqual('Action succeeded\n', self.stream.getvalue())
+        self.assertEqual('', self.stream.getvalue())
 
     def test_print_result_false(self):
         """If result is False, a no-op message is printed."""
@@ -136,26 +132,58 @@ class PrintResultTest(unittest.TestCase):
             APICredentials('user1', 'pass1', 'desc1'),
             APICredentials('user2', 'pass2', 'desc2')]
         print_result(credentials, file=self.stream)
-        output = self.stream.getvalue()
-        self.assertIn('user1', output)
-        self.assertIn('pass1', output)
-        self.assertIn('desc1', output)
-        self.assertIn('user2', output)
-        self.assertIn('pass2', output)
-        self.assertIn('desc2', output)
+        self.assertEqual(
+            textwrap.dedent(
+                '''\
+                +----------+----------+-------------+
+                | Username | Password | Description |
+                +----------+----------+-------------+
+                | user1    | pass1    | desc1       |
+                | user2    | pass2    | desc2       |
+                +----------+----------+-------------+
+                '''),
+            self.stream.getvalue())
+
+    def test_print_single_credential(self):
+        """If result is a single credential, it's printed as table."""
+        print_result(
+            APICredentials('user1', 'pass1', 'desc1'), file=self.stream)
+        self.assertEqual(
+            textwrap.dedent(
+                '''\
+                +----------+----------+-------------+
+                | Username | Password | Description |
+                +----------+----------+-------------+
+                | user1    | pass1    | desc1       |
+                +----------+----------+-------------+
+                '''),
+            self.stream.getvalue())
 
 
-class MainTest(fixtures.TestWithFixtures):
+class MainTest(asynctest.TestCase, fixtures.TestWithFixtures):
 
     def setUp(self):
         super().setUp()
+        ensure_database()
         tmpdir = self.useFixture(fixtures.TempDir())
         self.config_path = tmpdir.join('config.yaml')
         self.config = create_test_config(filename=self.config_path)
 
+    @asynctest.fail_on(unused_loop=False)
     @mock.patch('basic_auth.script.manage_credentials.db_call')
     def test_main(self, mock_db_call):
         """The script main performs DB operation."""
+        mock_db_call.return_value = []
+        args = ['--config', self.config_path, 'list']
+        main(loop=self.loop, raw_args=args, file=io.StringIO())
+        mock_db_call.assert_called_with(
+            mock.ANY, self.config, loop=self.loop)
+
+    def test_main_duplicated_user(self):
+        """If the user already exists an error is printed."""
         args = ['--config', self.config_path, 'add', 'user']
-        main(raw_args=args, file=io.StringIO())
-        mock_db_call.assert_called_with(mock.ANY, self.config, loop=None)
+        main(loop=self.loop, raw_args=args, file=io.StringIO())
+        with self.assertRaises(SystemExit) as cm:
+            main(loop=self.loop, raw_args=args, file=io.StringIO())
+        self.assertEqual(
+            'The specified username already exists', str(cm.exception))
