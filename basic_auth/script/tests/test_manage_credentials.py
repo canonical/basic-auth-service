@@ -74,28 +74,28 @@ class DbCallTest(asynctest.TestCase):
         args = argparse.Namespace(action='list')
         [creds] = db_call(args, self.config, loop=self.loop)
         self.assertEqual('user', creds.username)
-        self.assertEqual('pass', creds.password)
+        self.assertIsNotNone(creds.password)
         self.assertEqual('desc', creds.description)
 
     def test_db_call_list(self):
         """db_call can list API credentials."""
         args1 = argparse.Namespace(
-            action='add', username='user1', password='pass1', description='')
+            action='add', username='user1', description='')
         db_call(args1, self.config, loop=self.loop)
         args2 = argparse.Namespace(
-            action='add', username='user2', password='pass2', description='')
+            action='add', username='user2', description='')
         db_call(args2, self.config, loop=self.loop)
         args = argparse.Namespace(action='list')
         [creds1, creds2] = db_call(args, self.config, loop=self.loop)
         self.assertEqual('user1', creds1.username)
-        self.assertEqual('pass1', creds1.password)
+        self.assertIsNotNone(creds1.password)
         self.assertEqual('user2', creds2.username)
-        self.assertEqual('pass2', creds2.password)
+        self.assertIsNotNone(creds2.password)
 
     def test_db_call_remove(self):
         """db_call can remove API credentials."""
         args = argparse.Namespace(
-            action='add', username='user', password='pass', description='desc')
+            action='add', username='user', description='desc')
         db_call(args, self.config, loop=self.loop)
         args = argparse.Namespace(action='remove', username='user')
         self.assertTrue(db_call(args, self.config, loop=self.loop))
@@ -156,6 +156,6 @@ class MainTest(fixtures.TestWithFixtures):
     @mock.patch('basic_auth.script.manage_credentials.db_call')
     def test_main(self, mock_db_call):
         """The script main performs DB operation."""
-        args = ['--config', self.config_path, 'add', 'user', 'pass']
+        args = ['--config', self.config_path, 'add', 'user']
         main(raw_args=args, file=io.StringIO())
         mock_db_call.assert_called_with(mock.ANY, self.config, loop=None)

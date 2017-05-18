@@ -10,6 +10,7 @@ import uvloop
 from aiopg.sa import create_engine
 
 from ..config import load_config
+from ..credential import generate_random_token
 from ..db import run_in_transaction
 from ..db.model import APICredentials
 
@@ -28,7 +29,6 @@ def parse_args(args=None):
 
     add_parser = subparsers.add_parser('add', help='Add credentials')
     add_parser.add_argument('username', help='Credentials username')
-    add_parser.add_argument('password', help='Credentials password')
     add_parser.add_argument('--description', help='User description')
 
     remove_parser = subparsers.add_parser('remove', help='Remove credentials')
@@ -55,7 +55,8 @@ def db_call(args, config, loop=None):
     method_args = ()
     if args.action == 'add':
         method = 'add_api_credentials'
-        method_args = (args.username, args.password, args.description)
+        password = generate_random_token()
+        method_args = (args.username, password, args.description)
     elif args.action == 'remove':
         method = 'remove_api_credentials'
         method_args = (args.username,)
