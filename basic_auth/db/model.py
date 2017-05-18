@@ -28,6 +28,7 @@ class Model:
         await self._conn.execute(
             CREDENTIALS.insert().values(
                 user=user, username=username, password=password))
+        return Credentials(user, BasicAuthCredentials(username, password))
 
     async def get_credentials(self, user=None, username=None):
         """Return credentials by user or username."""

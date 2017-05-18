@@ -11,7 +11,11 @@ class ModelTest(DataBaseTest):
 
     async def test_add_credentials(self):
         """Credentials for a user can be added."""
-        await self.model.add_credentials('user', 'username', 'pass')
+        result = await self.model.add_credentials(
+            'user', 'username', 'pass')
+        self.assertEqual('user', result.user)
+        self.assertEqual('username', result.auth.username)
+        self.assertEqual('pass', result.auth.password)
         credentials = await self.model.get_credentials(user='user')
         self.assertEqual('user', credentials.user)
         self.assertEqual('username', credentials.auth.username)
@@ -79,7 +83,10 @@ class ModelTest(DataBaseTest):
 
     async def test_add_api_credentials(self):
         """Credentials for an API user can be added."""
-        await self.model.add_api_credentials('username', 'pass')
+        result = await self.model.add_api_credentials('username', 'pass')
+        self.assertEqual('username', result.username)
+        self.assertEqual('pass', result.password)
+        self.assertEqual('', result.description)
         credentials = await self.model.get_api_credentials('username')
         self.assertEqual('username', credentials.username)
         self.assertEqual('pass', credentials.password)
@@ -87,8 +94,9 @@ class ModelTest(DataBaseTest):
 
     async def test_add_api_credentials_with_description(self):
         """A description can be added for API user credentials."""
-        await self.model.add_api_credentials(
+        result = await self.model.add_api_credentials(
             'username', 'pass', description='a user')
+        self.assertEqual('a user', result.description)
         credentials = await self.model.get_api_credentials('username')
         self.assertEqual('a user', credentials.description)
 
