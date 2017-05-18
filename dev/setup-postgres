@@ -3,6 +3,7 @@
 DATABASES="
     basic-auth
     basic-auth-test
+    basic-auth-system-test
 "
 
 echo "Creating ${USER} role..."

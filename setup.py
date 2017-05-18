@@ -24,6 +24,7 @@ install_requires = [
 tests_require = [
     'asynctest',
     'fixtures',
+    'testresources',
 ]
 
 config = {

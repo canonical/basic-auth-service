@@ -1,4 +1,4 @@
-VE = run
+VE = deps
 VE_DIR = .tox/$(VE)
 
 SNAP_REQUIREMENTS := requirements-snap.txt
@@ -59,7 +59,7 @@ update-snap-requirements:  ## Update requirements file for the snap
 
 
 $(VE_DIR):
-	tox -e $(VE)
+	tox -e $(VE) -- pip list
 
 
 alembic.ini: templates/alembic.ini

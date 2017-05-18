@@ -34,14 +34,14 @@ class DataBaseTest(asynctest.TestCase):
         super().tearDown()
 
 
-def ensure_database():
+def ensure_database(dsn=TEST_DB_DSN):
     """Ensure that a clean database is available for tests."""
-    engine = sqlalchemy.create_engine(TEST_DB_DSN)
+    engine = sqlalchemy.create_engine(dsn)
     path_to_alembic = os.path.abspath(
         os.path.join(os.getcwd(), 'templates/alembic.ini'))
     output_buffer = io.BytesIO()
     alembic_cfg = Config(path_to_alembic, output_buffer=output_buffer)
-    alembic_cfg.set_section_option('alembic', 'sqlalchemy.url', TEST_DB_DSN)
+    alembic_cfg.set_section_option('alembic', 'sqlalchemy.url', dsn)
     alembic_cfg.set_section_option('loggers', 'keys', '')
     with engine.begin() as connection:
         alembic_cfg.attributes['connection'] = connection
