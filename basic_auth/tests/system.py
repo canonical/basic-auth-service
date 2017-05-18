@@ -42,7 +42,6 @@ class BasicAuthServiceResource(testresources.TestResourceManager):
     def clean(self, resource):
         self.process.terminate()
         self.process.wait()
-        # XXX include stdout/stderr in case of failure
         self.process.stdout.close()
         self.process.stderr.close()
         self.process = None
@@ -61,6 +60,10 @@ class SystemTests(asynctest.TestCase, testresources.ResourcedTestCase):
         # provide some api credentials for tests
         await self.call_model_method('add_api_credentials', 'user', 'pass')
 
+    async def tearDown(self):
+        self.client.close()
+        super().tearDown()
+
     async def call_model_method(self, method, *args, **kwargs):
         """Call the specified Model method with arguments."""
         engine_context = create_engine(dsn=SYSTEM_TEST_DB_DSN, loop=self.loop)
@@ -78,10 +81,6 @@ class SystemTests(asynctest.TestCase, testresources.ResourcedTestCase):
         async with method(url, *args, **kwargs) as resp:
             await resp.text()
             return resp
-
-    async def tearDown(self):
-        self.client.close()
-        super().tearDown()
 
     async def test_homepage(self):
         """The homepage shows a test message."""
