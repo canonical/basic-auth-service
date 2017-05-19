@@ -23,3 +23,10 @@ parts:
       source: .
       requirements: {{ snap_requirements }}
       build-packages: [gcc, libpq-dev]
+
+    templates:
+      plugin: dump
+      source: templates
+      organize:
+        config.yaml: usr/share/basic-auth-service/templates/
+        alembic.ini: usr/share/basic-auth-service/templates/
