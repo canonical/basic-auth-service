@@ -1,6 +1,6 @@
-# Basic authentication backend service
+# HTTP Basic authorization backend service
 
-This service provides a REST API to manage basic-authentication credentials,
+This service provides a REST API to manage basic-authorization credentials,
 and an endpoint for validating credentials provided in a request.
 
 
@@ -12,7 +12,7 @@ See the [API docs](API.md) for details on API calls.
 
 ### API credentials
 
-The REST API requires basic-authentication for access.
+The REST API requires basic-authorization for access.
 
 Credentials for API access can be managed with the `manage-credentials` script.
 This allows adding, removing and listing credentials.
@@ -35,9 +35,9 @@ $ ./manage-credentials list
 $ ./manage-credentials remove myuser
 ```
 
-## Authentication validation
+## Credentials validation
 
-The authentication endpoint is presented at `/auth-check` and returns an empty
+The validation endpoint is presented at `/auth-check` and returns an empty
 response with the following HTTP codes:
 
 - `200` for valid credentials
@@ -56,7 +56,7 @@ server {
 
     # ... other server config
 
-    # this location is protected by authentication 
+    # this location is protected by basic-auth 
     location /secret {
         auth_request /auth;
     }

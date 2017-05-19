@@ -50,7 +50,7 @@ def get_request(app, path='/', method='GET', content=None,
                 json_encode=True):
     """Create a test request.
 
-    The `auth` parameter for Basic-Authentication can be provided as tuple with
+    The `auth` parameter for Basic-Authorization can be provided as tuple with
     (user, password).
 
     If `json_encode` is set to False, the content is not converted to JSON (in

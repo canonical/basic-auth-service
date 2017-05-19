@@ -1,8 +1,8 @@
 name: basic-auth-service
 version: 0.1-git+{{ git_hash }}
-summary: Service for HTTP basic-authentication
+summary: Service for HTTP basic-authorization
 description: |
-  The service provides an endpoint for basic-authentication credentials
+  The service provides an endpoint for basic-authorization credentials
   verification, and a REST API to manage credentials.
 confinement: strict
 grade: devel

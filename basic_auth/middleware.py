@@ -7,13 +7,13 @@ from aiohttp import (
 
 
 class BaseBasicAuthMiddlewareFactory:
-    """A middleware for handling Basic Authentication."""
+    """A middleware for handling Basic Authorization."""
 
     def __init__(self, realm):
         self.realm = realm
 
     async def is_valid_auth(self, user, password):
-        """Return whether the basic authentication si valid.
+        """Return whether the basic-authorization si valid.
 
         It should be overridden by subclasses.
         """

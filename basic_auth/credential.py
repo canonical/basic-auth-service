@@ -10,7 +10,7 @@ _BasicAuthCredentials = namedtuple(
 
 
 class BasicAuthCredentials(_BasicAuthCredentials):
-    """Basic authentication credentials."""
+    """Basic authorization credentials."""
 
     @classmethod
     def generate(cls):

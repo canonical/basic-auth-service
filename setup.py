@@ -34,6 +34,7 @@ config = {
     'long_description': open('README.md').read(),
     'url': 'https://github.com/CanonicalLtd/basic-auth-service',
     'packages': find_packages(),
+    'package_data': {'basic_auth': ['alembic/*', 'alembic/versions/*']},
     'entry_points': {'console_scripts': [
         'basic-auth = basic_auth.script.server:main',
         'manage-credentials = basic_auth.script.manage_credentials:main']},

@@ -8,4 +8,4 @@ class RootTest(HandlerTestCase):
         """The root handler just returns info text."""
         response = await root(self.get_request())
         self.assertEqual(
-            'Basic authentication backend and API service.', response.text)
+            'HTTP basic-authorization backend and API service.', response.text)

@@ -7,17 +7,20 @@ The API can be accessed at the `/api` endpoint.
 
 ## Performing calls
 
-Authentication to the API service itself is performed through basic-authentication (credentials for the API are separate from the ones managed by the service).
+Authentication to the API service itself is performed through
+basic-authorization (credentials for the API are separate from the ones managed
+by the service).
 
-Payload for API requests and response is JSON, and the Content-Type for requests must be set to `application/json;version=1.0`.
+Payload for API requests and response is JSON, and the Content-Type for
+requests must be set to `application/json;version=1.0`.
 
 An example call to create a user is the following:
 
 ```
-curl -H 'Content-Type: application/json;version=1.0' -X POST http://user:pass@hostname/api/credentials -d '{"user": "foo"}'
+curl -H 'Content-Type: application/json;version=1.0' \
+     -X POST http://user:pass@hostname/api/credentials \
+     -d '{"user": "foo"}'
 ```
-
-
 
 
 ### Resources and calls
@@ -27,9 +30,11 @@ The following resources and calls are available in the API:
 
 ### Credentials
 
-Credentials map a user to a token representing its basic auth credentials (in the `username:password` form).
+Credentials map a user to a token representing its basic auth credentials (in
+the `username:password` form).
 
-The `user` is a unique string that has no special meaning for the service itself, so callers can be use any string .
+The `user` is a unique string that has no special meaning for the service
+itself, so callers can be use any string .
 
 The `token` can be either provided or generated automatically from the service.
 
@@ -58,14 +63,16 @@ The **request** body must as follows:
 and the **response** will contain the generated token:
 
 ```json
-{"user": "my-user", "token": "sdfasadfasdfa3f23fa4F:f4af3gf3aqkh34hg98h"}
+{"user": "my-user",
+ "token": "sdfasadfasdfa3f23fa4F:f4af3gf3aqkh34hg98h"}
 ```
 
 
 The **request** body can also provide a token in the form `username:password`:
 
 ```json
-{"user": "my-user", "token": "foo:bar"}
+{"user": "my-user",
+ "token": "foo:bar"}
 ```
 
 The following HTTP codes can be set in responses:
@@ -86,7 +93,8 @@ the url, for instance `/credentials/my-user`.
 The **response** contains user details, such as:
 
 ```json
-{"user": "my-user", "token": "sdfasadfasdfa3f23fa4F:f4af3gf3aqkh34hg98h"}
+{"user": "my-user", "token":
+ "sdfasadfasdfa3f23fa4F:f4af3gf3aqkh34hg98h"}
 ```
 
 The following HTTP codes can be set in responses:
@@ -133,7 +141,8 @@ in which case a new token is generated for the user, or it can specify a token:
 The **response** contains updated credentials:
 
 ```json
-{"user": "my-user", "token": "sdfasadfasdfa3f23fa4F:f4af3gf3aqkh34hg98h"}
+{"user": "my-user",
+ "token": "sdfasadfasdfa3f23fa4F:f4af3gf3aqkh34hg98h"}
 ```
 
 The following HTTP codes can be set in responses:

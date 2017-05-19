@@ -87,7 +87,7 @@ class SystemTests(asynctest.TestCase, testresources.ResourcedTestCase):
         response = await self.request('GET', '/')
         self.assertEqual(200, response.status)
         self.assertEqual(
-            'Basic authentication backend and API service.',
+            'HTTP basic-authorization backend and API service.',
             await response.text())
 
     async def test_api_no_credentials(self):
