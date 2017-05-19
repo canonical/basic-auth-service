@@ -34,7 +34,7 @@ upgrade-db-schema: $(VE_DIR)  ## Upgrade database schema
 
 
 .PHONY: check-patches
-check-patches: DUPLICATED_PATCH_NUMBERS := $(shell ls alembic/versions/*.py | \
+check-patches: DUPLICATED_PATCH_NUMBERS := $(shell ls basic_auth/alembic/versions/*.py | \
 	sed 's,.*/\([0-9]\+\)_.*,\1,' | sort -n | uniq -d)
 check-patches:  ## Check for duplicated patches
 	@if [ "$(DUPLICATED_PATCH_NUMBERS)" ]; then \
