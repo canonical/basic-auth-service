@@ -19,15 +19,20 @@ This allows adding, removing and listing credentials.
 As an example:
 
 ```bash
-$ ./manage-credentials add myuser mysecret --description 'a user'
+$ ./manage-credentials add myuser --description 'a user'
++----------+------------+-------------+
+| Username | Password   | Description |
++----------+------------+-------------+
+| myuser   | uXaQtXJV6q | a user      |
++----------+------------+-------------+
 $ ./manage-credentials list
-+----------+----------+-------------+
-| Username | Password | Description |
-+----------+----------+-------------+
-| myuser   | mysecret | a user      |
-+----------+----------+-------------+
++----------+------------+-------------+
+| Username | Password   | Description |
++----------+------------+-------------+
+| myuser   | uXaQtXJV6q | a user      |
+| youruser | vVnPzo4HMR |             |
++----------+------------+-------------+
 $ ./manage-credentials remove myuser
-Action succeeded
 ```
 
 ## Authentication validation
