@@ -99,13 +99,3 @@ class HandlerTestCase(asynctest.TestCase):
     def get_request(self, *args, **kwargs):
         """Create a test request."""
         return get_request(self.app, *args, **kwargs)
-
-    async def make_request(self, *args, **kwargs):
-        """Make a request through the application.
-
-        Arguments are passed directly to get_request().
-
-        """
-        request = self.get_request(*args, **kwargs)
-        info = await self.app.router.resolve(request)
-        return await info.handler(request)

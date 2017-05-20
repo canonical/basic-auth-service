@@ -20,16 +20,6 @@ class SampleBasicAuthMiddlewareFactory(BaseBasicAuthMiddlewareFactory):
         return (user, password) == ('user', 'pass')
 
 
-class SampleCollection:
-
-    def __init__(self):
-        self.calls = []
-
-    async def credentials_match(self, user, password):
-        self.calls.append((user, password))
-        return (user, password) == ('user', 'pass')
-
-
 class BaseBasicAuthMiddlewareFactoryTest(HandlerTestCase):
 
     def setUp(self):
@@ -48,7 +38,7 @@ class BaseBasicAuthMiddlewareFactoryTest(HandlerTestCase):
         """If no authentication is set, Unauthorized is returned."""
         calls = []
 
-        async def handler(request):
+        async def handler(request):  # pragma: no cover
             calls.append(request)
             return web.HTTPOk()
 
@@ -66,7 +56,7 @@ class BaseBasicAuthMiddlewareFactoryTest(HandlerTestCase):
         """If invalid auth details are provided, Unauthorized is returned."""
         calls = []
 
-        async def handler(request):
+        async def handler(request):  # pragma: no cover
             calls.append(request)
             return web.HTTPOk()
 

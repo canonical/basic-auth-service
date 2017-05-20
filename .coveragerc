@@ -1,0 +1,7 @@
+[run]
+source =
+  basic_auth
+omit =
+  basic_auth/tests/system.py
+  basic_auth/testing.py
+  basic_auth/alembic/**
