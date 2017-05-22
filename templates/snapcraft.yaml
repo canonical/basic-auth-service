@@ -9,7 +9,7 @@ grade: devel
 
 apps:
   basic-auth-service:
-    command: bin/basic-auth ${SNAP_DATA}/config.yaml
+    command: bin/basic-auth --config ${SNAP_DATA}/config.yaml
     daemon: simple
     plugs: [network-bind]
 
