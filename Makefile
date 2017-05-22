@@ -67,11 +67,16 @@ alembic.ini: templates/alembic.ini
 
 
 config.yaml: templates/config.yaml
-	@sed -e 's,{{ db_dsn }},$(POSTGRES_URI),' $< > $@
+	@sed \
+		-e 's,{{ db_dsn }},$(POSTGRES_URI),' \
+		-e 's,{{ app_port }},8080,' \
+		$< > $@
 
 
 .PHONY: snapcraft.yaml  # force rebuilding it since git revision might have changed
 snapcraft.yaml: GIT_HASH := $(shell git rev-parse --short HEAD)
 snapcraft.yaml:
-	@sed -e 's,{{ git_hash }},$(GIT_HASH),' \
-	-e 's,{{ snap_requirements }},$(SNAP_REQUIREMENTS),' templates/snapcraft.yaml > $@
+	@sed \
+		-e 's,{{ git_hash }},$(GIT_HASH),' \
+		-e 's,{{ snap_requirements }},$(SNAP_REQUIREMENTS),' \
+		templates/snapcraft.yaml > $@

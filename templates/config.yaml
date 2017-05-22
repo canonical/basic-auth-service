@@ -2,4 +2,4 @@ db:
   dsn: {{ db_dsn }}
 
 app:
-  port: 8080
+  port: {{ app_port }}
