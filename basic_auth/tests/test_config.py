@@ -85,5 +85,6 @@ class LoadConfigTest(fixtures.TestWithFixtures):
         # simulate parsing commandline
         args = argparse.Namespace(config=open(file_path))
         self.assertEqual(
-            {'db': {'dsn': 'postgresql:///basic-auth-test'}},
+            {'db': {'dsn': 'postgresql:///basic-auth-test'},
+             'app': {'port': 8080}},
             load_config(args).asdict())

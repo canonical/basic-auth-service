@@ -20,7 +20,8 @@ from .config import Config
 TEST_DB_DSN = 'postgresql:///basic-auth-test'
 
 
-def create_test_config(filename=None, use_db=True, db_dsn=TEST_DB_DSN):
+def create_test_config(filename=None, use_db=True, db_dsn=TEST_DB_DSN,
+                       port=8080):
     """Return a test configuration Config object.
 
     If filename is given, the configuration is also written to file.
@@ -29,10 +30,13 @@ def create_test_config(filename=None, use_db=True, db_dsn=TEST_DB_DSN):
     config = {
         'db': {
             'dsn': db_dsn
+        },
+        'app': {
+            'port': port
         }
     }
     if not use_db:
-        config['app'] = {'no-db': True}
+        config['app']['no-db'] = True
 
     if filename:
         with open(filename, 'w') as fd:

@@ -1,4 +1,4 @@
-"""Server entry point."""
+"""Application main."""
 
 import argparse
 import logging
@@ -59,7 +59,7 @@ async def create_app(conf, loop=None):
 
 
 def main(loop=None, raw_args=None):
-    """Server main."""
+    """Application main."""
     args = parse_args(args=raw_args)
     conf = load_config(args)
     setup_logging()
@@ -67,4 +67,5 @@ def main(loop=None, raw_args=None):
     if loop is None:
         loop = uvloop.new_event_loop()
     app = loop.run_until_complete(create_app(conf, loop=loop))
-    web.run_app(app, port=8080, loop=loop)
+    port = conf.get(('app', 'port'), 8080)
+    web.run_app(app, port=port, loop=loop)

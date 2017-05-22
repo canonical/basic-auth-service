@@ -37,7 +37,8 @@ class ParseArgsTest(fixtures.TestWithFixtures):
         with closing(args.config):
             config = yaml.load(args.config.read())
         self.assertEqual(
-            {'db': {'dsn': 'postgresql:///basic-auth-test'}},
+            {'db': {'dsn': 'postgresql:///basic-auth-test'},
+             'app': {'port': 8080}},
             config)
 
 

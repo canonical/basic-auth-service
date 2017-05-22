@@ -26,7 +26,8 @@ class ParseArgsTest(fixtures.TestWithFixtures):
         with closing(args.config):
             config = yaml.load(args.config.read())
         self.assertEqual(
-            {'db': {'dsn': 'postgresql:///basic-auth-test'}},
+            {'db': {'dsn': 'postgresql:///basic-auth-test'},
+             'app': {'port': 8080}},
             config)
 
 
@@ -80,4 +81,13 @@ class MainTest(asynctest.TestCase, fixtures.TestWithFixtures):
         """The script main runs the web application."""
         self.addCleanup(self._close_db, mock_run_app)
         main(raw_args=['--config', self.config_path])
-        self.assertTrue(mock_run_app.called)
+        mock_run_app.assert_called_with(mock.ANY, loop=mock.ANY, port=8080)
+
+    @asynctest.mock.patch('aiohttp.web.run_app')
+    @asynctest.mock.patch('basic_auth.script.server.setup_logging')
+    async def test_main_server_port(self, _, mock_run_app):
+        """A different application port can be specified in config file."""
+        create_test_config(filename=self.config_path, port=9090)
+        self.addCleanup(self._close_db, mock_run_app)
+        main(raw_args=['--config', self.config_path])
+        mock_run_app.assert_called_with(mock.ANY, loop=mock.ANY, port=9090)
