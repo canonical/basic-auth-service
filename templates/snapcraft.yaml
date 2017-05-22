@@ -13,6 +13,10 @@ apps:
     daemon: simple
     plugs: [network-bind]
 
+  manage-credentials:
+    command: bin/manage-credentials --config ${SNAP_DATA}/config.yaml
+    plugs: [network-bind]
+
   alembic:
     command: bin/alembic
     plugs: [network-bind]
