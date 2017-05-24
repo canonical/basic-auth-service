@@ -22,6 +22,8 @@ This will run unittests and lint. To only run tests, use `tox -e py35`
 Alternatively, coverage tests can be run with `tox -e coverage`, which also
 prints out the coverage report at the end.
 
+System are run separately from unittests, with `tox -e system-test`.
+
 
 ## Linting
 
