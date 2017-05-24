@@ -6,6 +6,7 @@ import sys
 import os
 import argparse
 import json
+from urllib.parse import quote
 
 import requests
 
@@ -54,6 +55,8 @@ def parse_args():
               'BASIC_AUTH_API_CREDS environment can be set.'),
         default=os.environ.get('BASIC_AUTH_API_CREDS'))
     parser.add_argument(
+        '--debug', action='store_true', help='Print out debug information')
+    parser.add_argument(
         'resource', help='The resource to operate on',
         choices=['credentials'])
 
@@ -88,11 +91,13 @@ def make_request(args):
     method = ACTIONS[args.action]
     url = '{}/{}'.format(args.url, args.resource)
     if args.action != 'add':
-        url += '/' + args.id
+        url += '/' + quote(args.id, safe='')
     headers = {'Content-Type': 'application/json;version=1.0'}
 
     details = getattr(args, 'details', None)
     data = json.dumps(details) if details is not None else None
+    if args.debug:
+        print('{} {} - {}'.format(method.upper(), url, details or {}))
     return requests.request(
         method, url, headers=headers, data=data, auth=args.creds)
 
