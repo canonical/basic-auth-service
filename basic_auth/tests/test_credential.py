@@ -3,6 +3,8 @@ from unittest import TestCase
 from ..credential import (
     BasicAuthCredentials,
     generate_random_token,
+    hash_token,
+    match_token,
 )
 
 
@@ -47,3 +49,23 @@ class GenerateRandomTokenTest(TestCase):
         self.assertEqual(20, len(generate_random_token()))
         self.assertEqual(10, len(generate_random_token(length=10)))
         self.assertEqual(30, len(generate_random_token(length=30)))
+
+
+class HashTokenTest(TestCase):
+
+    def test_hash(self):
+        """hash_token returns the SHA1 hash of the specified string."""
+        self.assertEqual(
+            '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33', hash_token('foo'))
+
+
+class MatchTokenTest(TestCase):
+
+    def test_token_matches(self):
+        """match_token returns True if the token matches the SHA1 hash."""
+        self.assertTrue(
+            match_token('foo', '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33'))
+
+    def test_token_no_match(self):
+        """match_token returns False if the token doesn't match the hash."""
+        self.assertFalse(match_token('foo', 'wronghashsum'))

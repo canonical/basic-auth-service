@@ -1,6 +1,27 @@
+import unittest
+
 from ..testing import DataBaseTest
 
-from ..model import Model
+from ..model import (
+    Model,
+    HashedAPICredentials,
+)
+from ...credential import hash_token
+
+
+class HashedAPICredentialsTest(unittest.TestCase):
+
+    def test_password_match_true(self):
+        """password_match returns True if the password matches."""
+        credentials = HashedAPICredentials(
+            'user', hash_token('pass'), 'a user')
+        self.assertTrue(credentials.password_match('pass'))
+
+    def test_password_match_false(self):
+        """password_match returns false if the password doesn't match."""
+        credentials = HashedAPICredentials(
+            'user', hash_token('pass'), 'a user')
+        self.assertFalse(credentials.password_match('other password'))
 
 
 class ModelTest(DataBaseTest):
@@ -89,7 +110,7 @@ class ModelTest(DataBaseTest):
         self.assertEqual('', result.description)
         credentials = await self.model.get_api_credentials('username')
         self.assertEqual('username', credentials.username)
-        self.assertEqual('pass', credentials.password)
+        self.assertTrue(credentials.password_match('pass'))
         self.assertEqual('', credentials.description)
 
     async def test_add_api_credentials_with_description(self):
@@ -113,7 +134,7 @@ class ModelTest(DataBaseTest):
         await self.model.add_api_credentials('username2', 'pass2')
         credentials = await self.model.get_api_credentials('username')
         self.assertEqual('username', credentials.username)
-        self.assertEqual('pass', credentials.password)
+        self.assertTrue(credentials.password_match('pass'))
         self.assertEqual('', credentials.description)
 
     async def test_remove_api_credentials(self):
@@ -134,8 +155,8 @@ class ModelTest(DataBaseTest):
             'username2', 'pass2', description='second user')
         cred1, cred2 = await self.model.get_all_api_credentials()
         self.assertEqual('username1', cred1.username)
-        self.assertEqual('pass1', cred1.password)
+        self.assertTrue(cred1.password_match('pass1'))
         self.assertEqual('', cred1.description)
         self.assertEqual('username2', cred2.username)
-        self.assertEqual('pass2', cred2.password)
+        self.assertTrue(cred2.password_match('pass2'))
         self.assertEqual('second user', cred2.description)

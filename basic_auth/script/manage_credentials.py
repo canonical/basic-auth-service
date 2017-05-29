@@ -74,16 +74,20 @@ def print_result(result, file=sys.stdout):
             print('No action performed', file=file)
         return
 
-    if not isinstance(result, list):
-        result = [result]
+    def make_table(fields):
+        table = prettytable.PrettyTable(
+            field_names=fields, header_style='cap')
+        table.align = 'l'
+        return table
 
-    table = prettytable.PrettyTable(
-        field_names=APICredentials._fields,
-        header_style='cap')
-    table.align = 'l'
+    if isinstance(result, list):
+        table = make_table(['username', 'description'])
+        for row in result:
+            table.add_row([row.username, row.description])
+    else:
+        table = make_table(APICredentials._fields)
+        table.add_row(result)
 
-    for row in result:
-        table.add_row(row)
     print(table, file=file)
 
 

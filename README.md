@@ -15,24 +15,28 @@ See the [API docs](API.md) for details on API calls.
 The REST API requires basic-authorization for access.
 
 Credentials for API access can be managed with the `manage-credentials` script.
-This allows adding, removing and listing credentials.
+This allows adding, removing and listing users.
 As an example:
 
 ```bash
+
 $ ./manage-credentials add myuser --description 'a user'
 +----------+------------+-------------+
 | Username | Password   | Description |
 +----------+------------+-------------+
 | myuser   | uXaQtXJV6q | a user      |
 +----------+------------+-------------+
+
 $ ./manage-credentials list
-+----------+------------+-------------+
-| Username | Password   | Description |
-+----------+------------+-------------+
-| myuser   | uXaQtXJV6q | a user      |
-| youruser | vVnPzo4HMR |             |
-+----------+------------+-------------+
++----------+-------------+
+| Username | Description |
++----------+-------------+
+| myuser   | a user      |
+| youruser |             |
++----------+-------------+
+
 $ ./manage-credentials remove myuser
+
 ```
 
 ## Credentials validation

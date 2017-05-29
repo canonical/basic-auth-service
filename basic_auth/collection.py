@@ -110,7 +110,7 @@ class DataBaseCredentialsCollection(ResourceCollection):
         if credentials is None:
             return False
 
-        return password == credentials.password
+        return credentials.password_match(password)
 
     async def _check_duplicated_username(self, model, user, username):
         """Raise InvalidResourceDetails if the username is already used."""

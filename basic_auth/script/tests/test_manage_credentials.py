@@ -55,7 +55,7 @@ class CallModelMethodTest(asynctest.TestCase):
         creds = await call_model_method(
             self.loop, TEST_DB_DSN, 'get_api_credentials', 'user')
         self.assertEqual('user', creds.username)
-        self.assertEqual('pass', creds.password)
+        self.assertTrue(creds.password_match('pass'))
         self.assertEqual('', creds.description)
 
 
@@ -136,12 +136,12 @@ class PrintResultTest(unittest.TestCase):
         self.assertEqual(
             textwrap.dedent(
                 '''\
-                +----------+----------+-------------+
-                | Username | Password | Description |
-                +----------+----------+-------------+
-                | user1    | pass1    | desc1       |
-                | user2    | pass2    | desc2       |
-                +----------+----------+-------------+
+                +----------+-------------+
+                | Username | Description |
+                +----------+-------------+
+                | user1    | desc1       |
+                | user2    | desc2       |
+                +----------+-------------+
                 '''),
             self.stream.getvalue())
 

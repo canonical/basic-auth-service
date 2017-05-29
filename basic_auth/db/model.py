@@ -2,7 +2,11 @@
 
 from collections import namedtuple
 
-from ..credential import BasicAuthCredentials
+from ..credential import (
+    BasicAuthCredentials,
+    hash_token,
+    match_token,
+)
 from .schema import (
     CREDENTIALS,
     API_CREDENTIALS,
@@ -14,7 +18,15 @@ CREDENTIALS_FIELDS = ('user', 'username', 'password')
 API_CREDENTIALS_FIELDS = ('username', 'password', 'description')
 
 Credentials = namedtuple('Credentials', ('user', 'auth'))
-APICredentials = namedtuple('APIUser', API_CREDENTIALS_FIELDS)
+APICredentials = namedtuple('APICredentials', API_CREDENTIALS_FIELDS)
+
+
+class HashedAPICredentials(APICredentials):
+    """API credentials where the password is hashed."""
+
+    def password_match(self, password):
+        """Return whether the password matches the hashed one."""
+        return match_token(password, self.password)
 
 
 class Model:
@@ -76,7 +88,8 @@ class Model:
             description = ''
         await self._conn.execute(
             API_CREDENTIALS.insert().values(
-                username=username, password=password, description=description))
+                username=username, password=hash_token(password),
+                description=description))
         return APICredentials(username, password, description)
 
     async def get_api_credentials(self, username):
@@ -86,7 +99,7 @@ class Model:
                 API_CREDENTIALS.c.username == username))
         row = await result.fetchone()
         if row is not None:
-            return APICredentials(
+            return HashedAPICredentials(
                 row['username'], row['password'], row['description'])
 
     async def remove_api_credentials(self, username):
@@ -101,6 +114,6 @@ class Model:
         result = await self._conn.execute(
             API_CREDENTIALS.select().order_by(API_CREDENTIALS.c.username))
         return [
-            APICredentials(
+            HashedAPICredentials(
                 row['username'], row['password'], row['description'])
             for row in await result.fetchall()]
