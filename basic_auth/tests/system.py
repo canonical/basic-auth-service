@@ -73,7 +73,8 @@ class SystemTests(asynctest.TestCase, testresources.ResourcedTestCase):
     async def request(self, method, path, *args, **kwargs):
         """Make a request with the client."""
         headers = kwargs.setdefault('headers', {})
-        headers['Content-Type'] = 'application/json;version=1.0'
+        headers['Content-Type'] = (
+            'application/json;profile=basic-auth.api;version=1.0')
 
         url = 'http://localhost:8080' + path
         method = getattr(self.client, method.lower())

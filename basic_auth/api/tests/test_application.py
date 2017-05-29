@@ -31,7 +31,7 @@ class ResourceEndpointTest(APITestCase):
         self.collection = SampleResourceCollection()
         self.resource = APIResource(
             self.collection, SampleCreateSchema, SampleUpdateSchema)
-        self.endpoint = SampleResourceEndpoint('sample', self.resource, '1.0')
+        self.endpoint = SampleResourceEndpoint('sample', self.resource)
         super().setUp()
 
     def create_app(self):
@@ -137,18 +137,6 @@ class ResourceEndpointTest(APITestCase):
              'message': 'Only GET requests are allowed'},
             json.loads(response.text))
 
-    async def test_request_invalid_mime_type(self):
-        """An invalid MIME type returns a Bad Request error."""
-        # no version info in the Content-Type
-        request = self.get_request(
-            method='POST', content_type='application/json')
-        with self.assertRaises(web.HTTPBadRequest) as cm:
-            await self.endpoint.handle_collection(request)
-        response = cm.exception
-        self.assertEqual(400, response.status)
-        self.assertEqual(
-            'Invalid request MIME type', json.loads(response.text)['message'])
-
     async def test_request_invalid_payload(self):
         """An invalid JSON payload returns a Bad Request error."""
         request = self.get_request(
@@ -167,7 +155,7 @@ class APIApplicationTest(APIApplicationTestCase):
         self.collection = SampleResourceCollection()
         self.resource = APIResource(
             self.collection, SampleCreateSchema, SampleUpdateSchema)
-        self.endpoint = SampleResourceEndpoint('sample', self.resource, '1.0')
+        self.endpoint = SampleResourceEndpoint('sample', self.resource)
         super().setUp()
 
     async def get_application(self):
@@ -195,3 +183,41 @@ class APIApplicationTest(APIApplicationTestCase):
         response = await self.client_request(path='/sample/foo')
         self.assertEqual(200, response.status)
         self.assertEqual(content, await response.json())
+
+    @unittest_run_loop
+    async def test_request_missing_version_mime_type(self):
+        """If API version is not provided an error is returned."""
+        self.app.version = '1.0'
+        content = {'id': 'foo', 'value': 'bar'}
+        response = await self.client_request(
+            method='POST', path='/sample', json=content)
+        self.assertEqual(400, response.status)
+        self.assertEqual(
+            {'code': 'Bad Request',
+             'message': 'Invalid request MIME type'},
+            await response.json())
+
+    @unittest_run_loop
+    async def test_request_missing_profile_mime_type(self):
+        """If API profile is not provided an error is returned."""
+        self.app.profile = 'myapp'
+        content = {'id': 'foo', 'value': 'bar'}
+        response = await self.client_request(
+            method='POST', path='/sample', json=content)
+        self.assertEqual(400, response.status)
+        self.assertEqual(
+            {'code': 'Bad Request',
+             'message': 'Invalid request MIME type'},
+            await response.json())
+
+    @unittest_run_loop
+    async def test_request_profile_and_version(self):
+        """IF API profile and version are specified, no error is raised."""
+        self.app.profile = 'myapp'
+        self.app.version = '1.0'
+        content = {'id': 'foo', 'value': 'bar'}
+        response = await self.client_request(
+            method='POST', path='/sample',
+            content_type='application/json; profile=myapp; version=1.0',
+            json=content)
+        self.assertEqual(201, response.status)

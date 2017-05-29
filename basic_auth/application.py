@@ -40,7 +40,9 @@ def setup_api_application(collection):
     """Setup an APIApplication."""
     auth_middleware_factory = BasicAuthMiddlewareFactory(
         'api', collection.api_credentials_match)
-    app = APIApplication(middlewares=[auth_middleware_factory])
+    app = APIApplication(
+        profile='basic-auth.api', version='1.0',
+        middlewares=[auth_middleware_factory])
     resource = APIResource(
         collection, CredentialsCreateSchema, CredentialsUpdateSchema)
     endpoint = ResourceEndpoint('credentials', resource)

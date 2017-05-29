@@ -6,13 +6,10 @@ from ..testing import (
 )
 
 
-API_CONTENT_TYPE = 'application/json;version=1.0'
-
-
 class APITestCase(HandlerTestCase):
 
     def get_request(self, path='/', method='GET', content=None,
-                    auth=None, content_type=API_CONTENT_TYPE,
+                    auth=None, content_type='application/json',
                     headers=None, json_encode=True):
         """Make an API request."""
         return super().get_request(
@@ -24,10 +21,10 @@ class APITestCase(HandlerTestCase):
 class APIApplicationTestCase(AioHTTPTestCase):
 
     async def client_request(self, method='GET', path='/', auth=None,
-                             **kwargs):
+                             content_type='application/json', **kwargs):
         """Make a request through the client."""
         headers = kwargs.setdefault('headers', {})
-        headers['Content-Type'] = API_CONTENT_TYPE
+        headers['Content-Type'] = content_type
         if auth is not None:
             headers.update(basic_auth_header(*auth))
         return await self.client.request(method, path, **kwargs)

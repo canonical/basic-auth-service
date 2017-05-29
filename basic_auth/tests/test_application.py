@@ -51,6 +51,8 @@ class BasicAuthCheckApplicationTest(AioHTTPTestCase):
 
 class SetupAPIApplicationTest(APIApplicationTestCase):
 
+    CONTENT_TYPE = 'application/json;profile=basic-auth.api;version=1.0'
+
     async def get_application(self):
         return setup_api_application(MemoryCredentialsCollection())
 
@@ -60,6 +62,7 @@ class SetupAPIApplicationTest(APIApplicationTestCase):
         content = {"user": "foo", "token": "user:pass"}
         response = await self.client_request(
             method='POST', path='/credentials', json=content,
+            content_type=self.CONTENT_TYPE,
             auth=('user', 'pass'))
         self.assertEqual(content, await response.json())
 
@@ -68,7 +71,8 @@ class SetupAPIApplicationTest(APIApplicationTestCase):
         """The API application requires basic auth."""
         content = {"user": "foo", "token": "user:pass"}
         response = await self.client_request(
-            method='POST', path='/credentials', json=content)
+            method='POST', path='/credentials', json=content,
+            content_type=self.CONTENT_TYPE)
         self.assertEqual(401, response.status)
 
 

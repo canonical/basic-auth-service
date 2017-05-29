@@ -30,10 +30,9 @@ class ResourceEndpoint:
         'PUT': 'update',
     }
 
-    def __init__(self, name, resource, version='1.0'):
+    def __init__(self, name, resource):
         self.name = name
         self.resource = resource
-        self.version = version
 
     async def handle_collection(self, request):
         """Handle a request for a collection."""
@@ -76,7 +75,6 @@ class ResourceEndpoint:
     async def _validate_request(self, request, allowed_methods):
         """Check that the request is valid and return the decoded payload."""
         self._check_method_allowed(request, allowed_methods)
-        self._check_valid_mimetype(request)
         if not request.content_length:
             return
         try:
@@ -92,33 +90,62 @@ class ResourceEndpoint:
                 'MethodNotAllowed', request.method, allowed_methods,
                 message=message)
 
-    def _check_valid_mimetype(self, request):
-        typ, subtype, suffix, params = parse_mimetype(
-            request.headers.get('Content-Type'))
-        valid_type = (typ, subtype, suffix) == ('application', 'json', '')
-        valid_version = params.get('version') == self.version
-        if not valid_type or not valid_version:
-            raise APIError('BadRequest', message='Invalid request MIME type')
-
 
 class APIApplication(web.Application):
     """The REST API application."""
 
+    def __init__(self, profile=None, version=None, **kwargs):
+        super().__init__(**kwargs)
+        self.profile = profile
+        self.version = version
+
     def register_endpoint(self, endpoint):
         self.router.add_route(
             '*', '/{name}'.format(name=endpoint.name),
-            endpoint.handle_collection, name='collection')
+            self._wrap_handle_collection(endpoint.handle_collection),
+            name='collection')
         self.router.add_route(
             '*', '/{name}/{{instance_id}}'.format(name=endpoint.name),
             self._wrap_handle_instance(endpoint.handle_instance),
             name='instance')
 
+    def _wrap_handle_collection(self, handle_collection):
+        """Wrap the handle_collection handler.
+
+        The wrapper checks the request MIME type.
+
+        """
+
+        @wraps(handle_collection)
+        async def wrapper(request):
+            self._check_valid_mimetype(request)
+            return await handle_collection(request)
+
+        return wrapper
+
     def _wrap_handle_instance(self, handle_instance):
-        """Wrap handle_instance handler to pass the ID as parameter."""
+        """Wrap the handle_instance handler.
+
+        The wrapper checks the request MIME type and passes the ID as
+        parameter.
+
+        """
 
         @wraps(handle_instance)
         async def wrapper(request):
+            self._check_valid_mimetype(request)
             instance_id = request.match_info['instance_id']
             return await handle_instance(request, instance_id)
 
         return wrapper
+
+    def _check_valid_mimetype(self, request):
+        typ, subtype, suffix, params = parse_mimetype(
+            request.headers.get('Content-Type'))
+        valid_type = (typ, subtype, suffix) == ('application', 'json', '')
+        valid_profile = (
+            params.get('profile') == self.profile or self.profile is None)
+        valid_version = (
+            params.get('version') == self.version or self.version is None)
+        if not all((valid_type, valid_profile, valid_version)):
+            raise APIError('BadRequest', message='Invalid request MIME type')

@@ -12,12 +12,12 @@ basic-authorization (credentials for the API are separate from the ones managed
 by the service).
 
 Payload for API requests and response is JSON, and the Content-Type for
-requests must be set to `application/json;version=1.0`.
+requests must be set to `application/json;profile=basic-auth.api;version=1.0`.
 
 An example call to create a user is the following:
 
 ```
-curl -H 'Content-Type: application/json;version=1.0' \
+curl -H 'Content-Type: application/json;profile=basic-auth.api;version=1.0' \
      -X POST http://user:pass@hostname/api/credentials \
      -d '{"user": "foo"}'
 ```

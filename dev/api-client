@@ -92,7 +92,8 @@ def make_request(args):
     url = '{}/{}'.format(args.url, args.resource)
     if args.action != 'add':
         url += '/' + quote(args.id, safe='')
-    headers = {'Content-Type': 'application/json;version=1.0'}
+    headers = {
+        'Content-Type': 'application/json;profile=basic-auth.api;version=1.0'}
 
     details = getattr(args, 'details', None)
     data = json.dumps(details) if details is not None else None
