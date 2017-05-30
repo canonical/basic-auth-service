@@ -33,6 +33,10 @@ def parse_args(args=None):
     add_parser.add_argument('username', help='Credentials username')
     add_parser.add_argument('--description', help='User description')
 
+    generate_parser = subparsers.add_parser(
+        'generate', help='Regenerate user credentials')
+    generate_parser.add_argument('username', help='Credentials username')
+
     remove_parser = subparsers.add_parser('remove', help='Remove credentials')
     remove_parser.add_argument('username', help='Username to remove')
 
@@ -56,6 +60,10 @@ def db_call(args, config, loop=None):
         method = 'add_api_credentials'
         password = generate_random_token()
         method_args = (args.username, password, args.description)
+    elif args.action == 'generate':
+        method = 'update_api_credentials'
+        password = generate_random_token()
+        method_args = (args.username, password)
     elif args.action == 'remove':
         method = 'remove_api_credentials'
         method_args = (args.username,)

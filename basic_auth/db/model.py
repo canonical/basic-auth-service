@@ -102,6 +102,14 @@ class Model:
             return HashedAPICredentials(
                 row['username'], row['password'], row['description'])
 
+    async def update_api_credentials(self, username, password):
+        """Update credentials for an API user."""
+        result = await self._conn.execute(
+            API_CREDENTIALS.update().where(
+                API_CREDENTIALS.c.username == username).values(
+                    password=hash_token(password)))
+        return bool(result.rowcount)
+
     async def remove_api_credentials(self, username):
         """Remove credentials for an API user."""
         query = API_CREDENTIALS.delete().where(

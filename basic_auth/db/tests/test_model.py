@@ -144,6 +144,21 @@ class ModelTest(DataBaseTest):
         self.assertTrue(removed)
         self.assertIsNone(await self.model.get_api_credentials('username'))
 
+    async def test_update_api_credentials(self):
+        """Password for API credentials can be updated."""
+        await self.model.add_api_credentials('username', 'pass')
+        updated = await self.model.update_api_credentials(
+            'username', 'newpass')
+        self.assertTrue(updated)
+        credentials = await self.model.get_api_credentials('username')
+        self.assertTrue(credentials.password_match('newpass'))
+
+    async def test_update_api_credentials_not_found(self):
+        """If the user is not found, update_api_credentials returns False."""
+        updated = await self.model.update_api_credentials(
+            'user', 'newpass')
+        self.assertFalse(updated)
+
     async def test_remove_api_credentials_not_found(self):
         """If username is unknown, remove_api_credentials returns False."""
         self.assertFalse(await self.model.remove_api_credentials('username'))
