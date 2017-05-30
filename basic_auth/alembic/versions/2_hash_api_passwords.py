@@ -37,6 +37,10 @@ def upgrade():
     data = [
         {'_id': row['id'], 'password': sha1sum(row['password'])}
         for row in result.fetchall()]
+
+    if not data:
+        return
+
     conn.execute(
         API_CREDENTIALS.update().where(
             API_CREDENTIALS.c.id == sa.bindparam('_id')).values(
