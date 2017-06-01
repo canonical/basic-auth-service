@@ -41,7 +41,7 @@ async def create_app(conf, loop=None):
     app = web.Application(middlewares=[web.normalize_path_middleware()])
 
     if conf.get(('app', 'no-db')):
-        collection = MemoryCredentialsCollection()
+        collection = MemoryCredentialsCollection(loop=loop)
     else:
         engine = await create_engine(dsn=conf['db', 'dsn'], loop=loop)
         collection = DataBaseCredentialsCollection(engine)

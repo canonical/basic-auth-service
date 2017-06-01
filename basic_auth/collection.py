@@ -1,6 +1,9 @@
 """Collection for Basic-Auth credentials."""
 
+import asyncio
+
 from .credential import BasicAuthCredentials
+from .lock import locking
 from .db import transact
 from .api import ResourceCollection
 from .api.sample import SampleResourceCollection
@@ -17,21 +20,35 @@ class MemoryCredentialsCollection(SampleResourceCollection):
     # Valid credentials for API access.
     VALID_API_CREDENTIALS = ('user', 'pass')
 
-    def __init__(self):
+    def __init__(self, loop=None):
         super().__init__(id_field='user')
+        self.lock = asyncio.Lock(loop=loop)
 
+    @locking
     async def create(self, details):
         auth = _get_auth(details.get('token'))
         self._check_duplicated_username(details['user'], auth.username)
         details['token'] = str(auth)
         return await super().create(details)
 
+    @locking
     async def update(self, user, details):
         auth = _get_auth(details.get('token'))
         self._check_duplicated_username(user, auth.username)
         details['token'] = str(auth)
         return await super().update(user, details)
 
+    @locking
+    async def delete(self, res_id):
+        # wrap with locking
+        return await super().delete(res_id)
+
+    @locking
+    async def get(self, res_id):
+        # wrap with locking
+        return await super().get(res_id)
+
+    @locking
     async def credentials_match(self, username, password):
         """Return whether the provided user/password match."""
         credentials = [details['token'] for details in self.items.values()]

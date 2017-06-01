@@ -54,7 +54,8 @@ class SetupAPIApplicationTest(APIApplicationTestCase):
     CONTENT_TYPE = 'application/json;profile=basic-auth.api;version=1.0'
 
     async def get_application(self):
-        return setup_api_application(MemoryCredentialsCollection())
+        collection = MemoryCredentialsCollection(loop=self.loop)
+        return setup_api_application(collection)
 
     @unittest_run_loop
     async def test_setup_api_application(self):
@@ -79,7 +80,8 @@ class SetupAPIApplicationTest(APIApplicationTestCase):
 class SetupAuthCheckApplicationTest(AioHTTPTestCase):
 
     async def get_application(self):
-        return setup_auth_check_application(MemoryCredentialsCollection())
+        collection = MemoryCredentialsCollection(loop=self.loop)
+        return setup_auth_check_application(collection)
 
     @unittest_run_loop
     async def test_setup_auth_check_application(self):

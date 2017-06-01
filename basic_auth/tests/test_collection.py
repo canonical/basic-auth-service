@@ -27,8 +27,6 @@ class CredentialsCollectionTest:
         await self.collection.create({'user': 'foo', 'token': None})
         details = await self.collection.get('foo')
         self.assertIsNotNone(details['token'])
-        result = await self.collection.get('foo')
-        self.assertIsNotNone(result['token'])
 
     async def test_create_user_exists(self):
         """If the user already exists, an error is raised."""
@@ -106,9 +104,21 @@ class CredentialsCollectionTest:
 class MemoryCredentialsCollectionTest(asynctest.TestCase,
                                       CredentialsCollectionTest):
 
+    forbid_get_event_loop = True
+
     def setUp(self):
         super().setUp()
-        self.collection = MemoryCredentialsCollection()
+        self.collection = MemoryCredentialsCollection(self.loop)
+
+    async def test_api_credentials_match_true(self):
+        """Test API credentials match."""
+        self.assertTrue(
+            await self.collection.api_credentials_match('user', 'pass'))
+
+    async def test_api_credentials_match_false(self):
+        """Other credentials don't match."""
+        self.assertFalse(
+            await self.collection.api_credentials_match('foo', 'bar'))
 
 
 class DataBaseCredentialsCollectionTest(DataBaseTest,
