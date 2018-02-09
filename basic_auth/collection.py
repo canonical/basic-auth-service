@@ -1,5 +1,6 @@
 """Collection for Basic-Auth credentials."""
 
+import logging
 import asyncio
 
 from .credential import BasicAuthCredentials
@@ -12,6 +13,9 @@ from .api.error import (
     ResourceNotFound,
     InvalidResourceDetails,
 )
+
+
+log = logging.getLogger()
 
 
 class MemoryCredentialsCollection(SampleResourceCollection):
@@ -29,6 +33,7 @@ class MemoryCredentialsCollection(SampleResourceCollection):
         auth = _get_auth(details.get('token'))
         self._check_duplicated_username(details['user'], auth.username)
         details['token'] = str(auth)
+        log.info('credentials updated for {}'.format(details['user']))
         return await super().create(details)
 
     @locking
@@ -36,11 +41,13 @@ class MemoryCredentialsCollection(SampleResourceCollection):
         auth = _get_auth(details.get('token'))
         self._check_duplicated_username(user, auth.username)
         details['token'] = str(auth)
+        log.info('credentials updated for {}'.format(user))
         return await super().update(user, details)
 
     @locking
     async def delete(self, res_id):
         # wrap with locking
+        log.info('resource deleted: {}'.format(res_id))
         return await super().delete(res_id)
 
     @locking
@@ -52,11 +59,19 @@ class MemoryCredentialsCollection(SampleResourceCollection):
     async def credentials_match(self, username, password):
         """Return whether the provided user/password match."""
         credentials = [details['token'] for details in self.items.values()]
-        return '{}:{}'.format(username, password) in credentials
+        if '{}:{}'.format(username, password) in credentials:
+            log.info(
+                'credentials match for {}'.format(credentials.user))
+            return True
+        return False
 
     async def api_credentials_match(self, username, password):
         """Return whether API credentials match."""
-        return (username, password) == self.VALID_API_CREDENTIALS
+        if (username, password) == self.VALID_API_CREDENTIALS:
+            log.info(
+                'api_credentials match for {}'.format(credentials.user))
+            return True
+        return False
 
     def _check_duplicated_username(self, user, username):
         """Raise InvalidResourceDetails if the username is already used."""
@@ -82,6 +97,7 @@ class DataBaseCredentialsCollection(ResourceCollection):
         auth = _get_auth(details.get('token'))
         await self._check_duplicated_username(model, user, auth.username)
         await model.add_credentials(user, auth.username, auth.password)
+        log.info('credentials updated for {}'.format(user))
         return user, {'user': user, 'token': str(auth)}
 
     @transact
@@ -90,6 +106,8 @@ class DataBaseCredentialsCollection(ResourceCollection):
         removed = await model.remove_credentials(user)
         if not removed:
             raise ResourceNotFound(user)
+        else:
+            log.info('resource deleted: {}'.format(user))
 
     @transact
     async def get(self, model, user):
@@ -97,7 +115,6 @@ class DataBaseCredentialsCollection(ResourceCollection):
         credentials = await model.get_credentials(user=user)
         if credentials is None:
             raise ResourceNotFound(user)
-
         return {'user': user, 'token': str(credentials.auth)}
 
     @transact
@@ -109,25 +126,28 @@ class DataBaseCredentialsCollection(ResourceCollection):
         auth = _get_auth(details.get('token'))
         await self._check_duplicated_username(model, user, auth.username)
         await model.update_credentials(user, auth.username, auth.password)
+        log.info('credentials updated for {}'.format(user))
         return {'user': user, 'token': str(auth)}
 
     @transact
     async def credentials_match(self, model, username, password):
         """Check if username and password match known credentials."""
         credentials = await model.get_credentials(username=username)
-        if credentials is None:
-            return False
-
-        return password == credentials.auth.password
+        if credentials is not None and password == credentials.auth.password:
+            log.info(
+                'credentials match for {}'.format(credentials.user))
+            return True
+        return False
 
     @transact
     async def api_credentials_match(self, model, username, password):
         """Check if username and password match known API credentials."""
         credentials = await model.get_api_credentials(username)
-        if credentials is None:
-            return False
-
-        return credentials.password_match(password)
+        if credentials is not None and password == credentials.auth.password:
+            log.info(
+                'api_credentials match for {}'.format(credentials.user))
+            return True
+        return False
 
     async def _check_duplicated_username(self, model, user, username):
         """Raise InvalidResourceDetails if the username is already used."""

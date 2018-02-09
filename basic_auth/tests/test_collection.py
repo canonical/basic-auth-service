@@ -19,7 +19,9 @@ class CredentialsCollectionTest:
     async def test_create_with_token(self):
         """If token is not None, it's saved."""
         details = {'user': 'foo', 'token': 'foo:bar'}
-        await self.collection.create(details)
+        with asynctest.mock.patch('logging') as mock_log:
+            await self.collection.create(details)
+        self.assertEqual(mock_log.info.called_once, True)
         self.assertEqual(details, await self.collection.get('foo'))
 
     async def test_create_random_token(self):
