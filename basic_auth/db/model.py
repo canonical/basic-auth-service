@@ -42,6 +42,17 @@ class Model:
                 user=user, username=username, password=password))
         return Credentials(user, BasicAuthCredentials(username, password))
 
+    async def get_all_credentials(self):
+        """Return all credentials ordered by username."""
+        query = CREDENTIALS.select().order_by(CREDENTIALS.c.username)
+        result = await self._conn.execute(query)
+        return (
+            Credentials(
+                row['user'],
+                BasicAuthCredentials(row['username'], row['password'])
+            ) for row in await result.fetchall()
+        )
+
     async def get_credentials(self, user=None, username=None):
         """Return credentials by user or username."""
         if (user, username) == (None, None):

@@ -18,10 +18,11 @@ class ResourceEndpoint:
 
     # Allowed HTTP methods for collection and instances requests.  Subclasses
     # can change these.
-    collection_methods = frozenset(['POST'])
+    collection_methods = frozenset(['GET', 'POST'])
     instance_methods = frozenset(['GET', 'PUT', 'DELETE'])
 
     _collection_methods_map = {
+        'GET': 'get_all',
         'POST': 'create',
     }
     _instance_methods_map = {

@@ -13,9 +13,15 @@ class ResourceCollection:
 
         This method must return a 2-tuple with the resource ID and
         representation as dict.
-
         """
         raise NotImplementedError('Subclasses must implement create()')
+
+    async def get_all(self):
+        """Return all resources.
+
+        The response will have the password fragment of the token redacted.
+        """
+        raise NotImplementedError('Subclasses must implement get()')
 
     async def delete(self, res_id):
         """Delete the resource with specified ID.
@@ -58,6 +64,10 @@ class APIResource:
         """Create a resource from the specified details."""
         cleaned_data = self._clean_data(self.create_schema, data)
         return await self.collection.create(cleaned_data)
+
+    async def get_all(self, data=None):
+        """List all resources."""
+        return tuple(await self.collection.get_all())
 
     async def delete(self, resource_id, data=None):
         """Delete a resource by ID."""
