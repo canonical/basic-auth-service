@@ -35,6 +35,10 @@ class MemoryCredentialsCollection(SampleResourceCollection):
         details['token'] = str(auth)
         return await super().create(details)
 
+    async def get_all(self):
+        """Return all credentials."""
+        return await super().get_all()
+
     @locking
     async def update(self, user, details):
         auth = _get_auth(details.get('token'))
@@ -92,6 +96,7 @@ class DataBaseCredentialsCollection(ResourceCollection):
     @transact
     async def get_all(self, model):
         """Return all credentials."""
+        log.info('credentials listed')
         return (
             {'user': credentials.user, 'username': credentials.auth.username}
             for credentials in await model.get_all_credentials()
