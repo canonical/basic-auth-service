@@ -43,30 +43,47 @@ Calls related to credentials are the following:
 
 | Endpoint              | Method | Description                    |
 | ----------------------|--------|--------------------------------|
+| `/credentials`        | GET    | List all credentials           |
 | `/credentials`        | POST   | Create a user with credentials |
 | `/credentials/<user>` | GET    | Return user credentials        |
 | `/credentials/<user>` | PUT    | Update user credentials        |
 | `/credentials/<user>` | DELETE | Delete user credentials        |
 
 
+#### GET /credentials
+
+List all user credentials, with the password fragment of the code redacted.
+
+The **request** doesn't require a body. The **response** lists user details,
+ordered alphabetically by token (username), such as:
+
+```json
+[
+  {"user": "who", "username": "adfasadfasdfa3f23fa4F"},
+  {"user": "rose", "username": "bjdhoNafkdaDps438u3df"}
+]
+```
+
+The following HTTP codes can be set in responses:
+
+- `200 OK`: normal response.
+
+
 #### POST /credentials
 
 Create user credentials.
-
 
 The **request** body must as follows:
 
 ```json
 {"user": "my-user"}
 ```
-
 and the **response** will contain the generated token:
 
 ```json
 {"user": "my-user",
  "token": "sdfasadfasdfa3f23fa4F:f4af3gf3aqkh34hg98h"}
 ```
-
 
 The **request** body can also provide a token in the form `username:password`:
 
@@ -150,5 +167,3 @@ The following HTTP codes can be set in responses:
 - `200 OK`: normal response, user have been removed
 - `404 Not Found`: the requested user is not found
 - `400 Bad Request`: the specified token format is invalid
-
-
