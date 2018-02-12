@@ -21,7 +21,7 @@ class ResourceCollection:
 
         The response will have the password fragment of the token redacted.
         """
-        raise NotImplementedError('Subclasses must implement get()')
+        raise NotImplementedError('Subclasses must implement get_all()')
 
     async def delete(self, res_id):
         """Delete the resource with specified ID.

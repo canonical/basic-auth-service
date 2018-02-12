@@ -44,10 +44,18 @@ class ModelTest(DataBaseTest):
 
     async def test_get_all_credentials(self):
         """All credentials can be retrieved."""
-        await self.model.add_credentials('user1', 'username1', 'pass')
-        await self.model.add_credentials('user2', 'username2', 'pass')
+        await self.model.add_credentials('user1', 'usernameC', 'pass1')
+        await self.model.add_credentials('user2', 'usernameB', 'pass2')
+        await self.model.add_credentials('user3', 'usernameA', 'pass3')
         credentials = await self.model.get_all_credentials()
-        self.assertEqual(['user1', 'user2'], [x.user for x in credentials])
+        raw_credentials = [
+            (c.user, c.auth.username, c.auth.password) for c in credentials]
+        expected_credentials = [
+            ('user3', 'usernameA', 'pass3'),
+            ('user2', 'usernameB', 'pass2'),
+            ('user1', 'usernameC', 'pass1'),
+        ]
+        self.assertEqual(raw_credentials, expected_credentials)
 
     async def test_get_credentials_by_user(self):
         """Credentials for a user can be retrieved by user."""

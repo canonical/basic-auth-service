@@ -22,6 +22,19 @@ class SampleResourceCollectionTest(asynctest.TestCase):
         self.assertEqual(data, details)
         self.assertEqual({'foo': {'bar': 'baz'}}, self.collection.items)
 
+    async def test_get_all(self):
+        """It is possible to retrieve all resources in the collection."""
+        await self.collection.create({'id': 'user1', 'token': 'ccc:secret'})
+        await self.collection.create({'id': 'user2', 'token': 'bbb:secret'})
+        await self.collection.create({'id': 'user3', 'token': 'aaa:secret'})
+        resources = list(await self.collection.get_all())
+        expected_resources = [
+            {'id': 'user3', 'username': 'aaa'},
+            {'id': 'user2', 'username': 'bbb'},
+            {'id': 'user1', 'username': 'ccc'},
+        ]
+        self.assertEqual(resources, expected_resources)
+
     async def test_create_duplicated(self):
         """Trying to create a resource with an existing ID raises an error."""
         await self.collection.create({'id': 'foo', 'bar': 'baz'})
