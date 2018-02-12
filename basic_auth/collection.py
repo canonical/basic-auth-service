@@ -1,6 +1,7 @@
 """Collection for Basic-Auth credentials."""
 
 import asyncio
+import logging
 
 from .credential import BasicAuthCredentials
 from .lock import locking
@@ -12,6 +13,9 @@ from .api.error import (
     ResourceNotFound,
     InvalidResourceDetails,
 )
+
+
+log = logging.getLogger()
 
 
 class MemoryCredentialsCollection(SampleResourceCollection):
@@ -30,6 +34,10 @@ class MemoryCredentialsCollection(SampleResourceCollection):
         self._check_duplicated_username(details['user'], auth.username)
         details['token'] = str(auth)
         return await super().create(details)
+
+    async def get_all(self):
+        """Return all credentials."""
+        return await super().get_all()
 
     @locking
     async def update(self, user, details):
@@ -82,13 +90,25 @@ class DataBaseCredentialsCollection(ResourceCollection):
         auth = _get_auth(details.get('token'))
         await self._check_duplicated_username(model, user, auth.username)
         await model.add_credentials(user, auth.username, auth.password)
+        log.info('credentials added: {}'.format(user))
         return user, {'user': user, 'token': str(auth)}
+
+    @transact
+    async def get_all(self, model):
+        """Return all credentials."""
+        log.info('credentials listed')
+        return (
+            {'user': credentials.user, 'username': credentials.auth.username}
+            for credentials in await model.get_all_credentials()
+        )
 
     @transact
     async def delete(self, model, user):
         """Delete credentials for a user."""
         removed = await model.remove_credentials(user)
-        if not removed:
+        if removed:
+            log.info('credentials deleted: {}'.format(user))
+        else:
             raise ResourceNotFound(user)
 
     @transact
@@ -97,7 +117,7 @@ class DataBaseCredentialsCollection(ResourceCollection):
         credentials = await model.get_credentials(user=user)
         if credentials is None:
             raise ResourceNotFound(user)
-
+        log.info('credentials retrieved: {}'.format(user))
         return {'user': user, 'token': str(credentials.auth)}
 
     @transact
@@ -105,10 +125,10 @@ class DataBaseCredentialsCollection(ResourceCollection):
         """Update credentials for a user."""
         if not await model.is_known_user(user):
             raise ResourceNotFound(user)
-
         auth = _get_auth(details.get('token'))
         await self._check_duplicated_username(model, user, auth.username)
         await model.update_credentials(user, auth.username, auth.password)
+        log.info('credentials updated: {}'.format(user))
         return {'user': user, 'token': str(auth)}
 
     @transact
@@ -117,7 +137,7 @@ class DataBaseCredentialsCollection(ResourceCollection):
         credentials = await model.get_credentials(username=username)
         if credentials is None:
             return False
-
+        log.info('credentials login attempt: {}'.format(credentials.user))
         return password == credentials.auth.password
 
     @transact
@@ -126,7 +146,6 @@ class DataBaseCredentialsCollection(ResourceCollection):
         credentials = await model.get_api_credentials(username)
         if credentials is None:
             return False
-
         return credentials.password_match(password)
 
     async def _check_duplicated_username(self, model, user, username):

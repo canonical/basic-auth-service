@@ -73,6 +73,15 @@ class APIResourceTest(asynctest.TestCase):
             'Error: "id": 33 is not a string: {\'id\': \'\'}',
             str(cm.exception))
 
+    async def test_get_all(self):
+        """The get_all method returns all items from the collection."""
+        await self.collection.create({'id': 'foo', 'token': 'foo:bar'})
+        await self.collection.create({'id': 'baz', 'token': 'baz:qux'})
+        self.assertEqual((
+            {'id': 'baz', 'username': 'baz'},
+            {'id': 'foo', 'username': 'foo'},
+        ), await self.resource.get_all())
+
     async def test_delete(self):
         "The delete methods removes an item from the collection."
         data = {'id': 'foo', 'value': 'bar'}

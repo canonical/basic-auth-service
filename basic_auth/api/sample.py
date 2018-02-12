@@ -1,6 +1,7 @@
 """Sample/testing API implementation classes."""
 
 from copy import deepcopy
+import operator
 
 import colander
 
@@ -44,6 +45,12 @@ class SampleResourceCollection(ResourceCollection):
         self.items[res_id] = resource_details
         # Retruned details include the resource ID
         return res_id, details
+
+    async def get_all(self):
+        return sorted((
+            self._copy_and_add_id(k, {'username': v['token'].split(':')[0]})
+            for k, v in self.items.items()
+        ), key=operator.itemgetter('username'))
 
     async def delete(self, res_id):
         try:

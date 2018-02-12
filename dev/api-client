@@ -12,10 +12,12 @@ import requests
 
 
 ACTIONS = {
-    'add': 'post',
-    'remove': 'delete',
-    'get': 'get',
-    'update': 'put'}
+    'add': {'method': 'post', 'help': 'Add a resource', 'id': False},
+    'list': {'method': 'get', 'help': 'List all resources', 'id': False},
+    'remove': {'method': 'delete', 'help': 'Remove a resource', 'id': True},
+    'get': {'method': 'get', 'help': 'Get a single resource', 'id': True},
+    'update': {'method': 'put', 'help': 'Update a resource', 'id': True},
+}
 
 
 def detail_type(detail):
@@ -63,10 +65,9 @@ def parse_args():
     subparsers = parser.add_subparsers(
         help='The action to perform', dest='action', metavar='action')
     subparsers.required = True
-    for action in ACTIONS:
-        subparser = subparsers.add_parser(
-            action, help='{} a resource'.format(action.capitalize()))
-        if action != 'add':
+    for action, info in ACTIONS.items():
+        subparser = subparsers.add_parser(action, help=info['help'])
+        if info['id']:
             subparser.add_argument('id', help='The resource identifier')
         if action in ('add', 'update'):
             nargs = '+' if action == 'add' else '*'
@@ -88,9 +89,10 @@ def main():
 
 def make_request(args):
     """Make an API request."""
-    method = ACTIONS[args.action]
+    info = ACTIONS[args.action]
+    method = info['method']
     url = '{}/{}'.format(args.url, args.resource)
-    if args.action != 'add':
+    if info['id']:
         url += '/' + quote(args.id, safe='')
     headers = {
         'Content-Type': 'application/json;profile=basic-auth.api;version=1.0'}

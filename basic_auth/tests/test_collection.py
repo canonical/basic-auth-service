@@ -41,6 +41,22 @@ class CredentialsCollectionTest:
             await self.collection.create({'user': 'user2', 'token': 'bar:bza'})
         self.assertEqual('Token username already in use', str(cm.exception))
 
+    async def test_get_all(self):
+        """All credentials are properly returned."""
+        await self.collection.create({'user': 'who', 'token': 'w:secret'})
+        await self.collection.create({'user': 'rose', 'token': 'r:secret'})
+        creds = tuple(await self.collection.get_all())
+        expected_creds = (
+            {'user': 'rose', 'username': 'r'},
+            {'user': 'who', 'username': 'w'},
+        )
+        self.assertEqual(creds, expected_creds)
+
+    async def test_get_all_empty(self):
+        """Empty credentials are properly returned."""
+        creds = list(await self.collection.get_all())
+        self.assertEqual(creds, [])
+
     async def test_delete(self):
         """Credentials for a user can be deleted."""
         await self.collection.create({'user': 'foo', 'token': 'foo:bar'})

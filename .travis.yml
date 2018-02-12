@@ -1,0 +1,15 @@
+language: python
+sudo: required
+services:
+  - postgresql
+python:
+  - "3.5"
+  - "3.6"
+install:
+  - pip install codecov tox-travis
+  - make setup-db
+script:
+  - tox
+after_success:
+  - tox -e coverage
+  - codecov
