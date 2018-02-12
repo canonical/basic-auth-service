@@ -5,6 +5,7 @@ import fixtures
 
 import asynctest
 
+import uvloop
 import yaml
 
 from ..server import (
@@ -68,6 +69,8 @@ class MainTest(asynctest.TestCase, fixtures.TestWithFixtures):
         tmpdir = self.useFixture(fixtures.TempDir())
         self.config_path = tmpdir.join('config.yaml')
         create_test_config(filename=self.config_path)
+        self.uvloop = uvloop.new_event_loop()
+        self.addCleanup(self.uvloop.stop)
 
     async def _close_db(self, run_app):
         """Close the DB in the app that was passed to the run_app call."""
@@ -80,7 +83,7 @@ class MainTest(asynctest.TestCase, fixtures.TestWithFixtures):
     async def test_main_calls_web_run_app(self, _, mock_run_app):
         """The script main runs the web application."""
         self.addCleanup(self._close_db, mock_run_app)
-        main(raw_args=['--config', self.config_path])
+        main(loop=self.uvloop, raw_args=['--config', self.config_path])
         mock_run_app.assert_called_with(mock.ANY, loop=mock.ANY, port=8080)
 
     @asynctest.mock.patch('aiohttp.web.run_app')
@@ -89,5 +92,5 @@ class MainTest(asynctest.TestCase, fixtures.TestWithFixtures):
         """A different application port can be specified in config file."""
         create_test_config(filename=self.config_path, port=9090)
         self.addCleanup(self._close_db, mock_run_app)
-        main(raw_args=['--config', self.config_path])
+        main(loop=self.uvloop, raw_args=['--config', self.config_path])
         mock_run_app.assert_called_with(mock.ANY, loop=mock.ANY, port=9090)
