@@ -10,7 +10,7 @@ from basic_auth import (
 
 
 install_requires = [
-    'aiohttp',
+    'aiohttp==2.3.10',
     'alembic',
     'aiopg',
     'colander',
