@@ -46,7 +46,7 @@ class SampleResourceCollection(ResourceCollection):
         # Retruned details include the resource ID
         return res_id, details
 
-    async def get_all(self):
+    async def get_all(self, *args, **kwargs):
         return sorted((
             self._copy_and_add_id(k, {'username': v['token'].split(':')[0]})
             for k, v in self.items.items()

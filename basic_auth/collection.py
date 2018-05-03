@@ -94,13 +94,13 @@ class DataBaseCredentialsCollection(ResourceCollection):
         return user, {'user': user, 'token': str(auth)}
 
     @transact
-    async def get_all(self, model):
+    async def get_all(self, model, start_date=None, end_date=None):
         """Return all credentials."""
         log.info('credentials listed')
         return (
             {'user': credentials.user, 'username': credentials.auth.username}
-            for credentials in await model.get_all_credentials()
-        )
+            for credentials in await model.get_all_credentials(
+                start_date=start_date, end_date=end_date))
 
     @transact
     async def delete(self, model, user):

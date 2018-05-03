@@ -77,10 +77,10 @@ class APIResourceTest(asynctest.TestCase):
         """The get_all method returns all items from the collection."""
         await self.collection.create({'id': 'foo', 'token': 'foo:bar'})
         await self.collection.create({'id': 'baz', 'token': 'baz:qux'})
-        self.assertEqual((
+        expected = (
             {'id': 'baz', 'username': 'baz'},
-            {'id': 'foo', 'username': 'foo'},
-        ), await self.resource.get_all())
+            {'id': 'foo', 'username': 'foo'})
+        self.assertEqual(expected, await self.resource.get_all())
 
     async def test_delete(self):
         "The delete methods removes an item from the collection."

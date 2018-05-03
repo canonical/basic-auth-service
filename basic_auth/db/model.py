@@ -2,6 +2,8 @@
 
 from collections import namedtuple
 
+from sqlalchemy import and_
+
 from ..credential import (
     BasicAuthCredentials,
     hash_token,
@@ -42,16 +44,28 @@ class Model:
                 user=user, username=username, password=password))
         return Credentials(user, BasicAuthCredentials(username, password))
 
-    async def get_all_credentials(self):
-        """Return all credentials ordered by username."""
-        query = CREDENTIALS.select().order_by(CREDENTIALS.c.username)
+    async def get_all_credentials(self, start_date=None, end_date=None):
+        """Return all credentials ordered by username.
+
+        @param start_date An optional start_date; limits credential listing
+            to those created on or after this date.
+        @param end_date An optional end_date; limits credential listing
+            to those created on or before this date.
+        """
+        conditions = []
+        if start_date is not None:
+            conditions.append(CREDENTIALS.c.creation_time >= start_date)
+        if end_date is not None:
+            conditions.append(CREDENTIALS.c.creation_time <= end_date)
+        conditions = and_(*conditions)
+        query = CREDENTIALS.select().where(conditions).order_by(
+            CREDENTIALS.c.username)
         result = await self._conn.execute(query)
         return (
             Credentials(
                 row['user'],
                 BasicAuthCredentials(row['username'], row['password'])
-            ) for row in await result.fetchall()
-        )
+            ) for row in await result.fetchall())
 
     async def get_credentials(self, user=None, username=None):
         """Return credentials by user or username."""
