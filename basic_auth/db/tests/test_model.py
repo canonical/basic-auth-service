@@ -1,3 +1,7 @@
+from datetime import (
+    datetime,
+    timedelta,
+)
 import unittest
 
 from ..testing import DataBaseTest
@@ -55,6 +59,25 @@ class ModelTest(DataBaseTest):
             ('user2', 'usernameB', 'pass2'),
             ('user1', 'usernameC', 'pass1'),
         ]
+        self.assertEqual(raw_credentials, expected_credentials)
+
+    async def test_get_all_credentials_date(self):
+        """All credentials can be retrieved."""
+        now = datetime.now()
+        await self.model.add_credentials('user1', 'usernameC', 'pass1')
+
+        expected_credentials = [('user1', 'usernameC', 'pass1')]
+        start = now - timedelta(10)
+        end = now + timedelta(10)
+
+        credentials = await self.model.get_all_credentials(start_date=start)
+        raw_credentials = [
+            (c.user, c.auth.username, c.auth.password) for c in credentials]
+        self.assertEqual(raw_credentials, expected_credentials)
+
+        credentials = await self.model.get_all_credentials(end_date=end)
+        raw_credentials = [
+            (c.user, c.auth.username, c.auth.password) for c in credentials]
         self.assertEqual(raw_credentials, expected_credentials)
 
     async def test_get_credentials_by_user(self):

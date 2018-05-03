@@ -59,8 +59,7 @@ class Model:
             Credentials(
                 row['user'],
                 BasicAuthCredentials(row['username'], row['password'])
-            ) for row in await result.fetchall()
-        )
+            ) for row in await result.fetchall())
 
     async def get_credentials(self, user=None, username=None):
         """Return credentials by user or username."""
