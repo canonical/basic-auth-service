@@ -45,7 +45,13 @@ class Model:
         return Credentials(user, BasicAuthCredentials(username, password))
 
     async def get_all_credentials(self, start_date=None, end_date=None):
-        """Return all credentials ordered by username."""
+        """Return all credentials ordered by username.
+
+        @param start_date An optional start_date; limits credential listing
+            to those created on or after this date.
+        @param end_date An optional end_date; limits credential listing
+            to those created on or before this date.
+        """
         conditions = []
         if start_date is not None:
             conditions.append(CREDENTIALS.c.creation_time >= start_date)

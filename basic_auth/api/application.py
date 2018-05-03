@@ -14,7 +14,10 @@ from .response import (
     APIResponse,
     APIError,
 )
-from .error import to_api_error
+from .error import (
+    InvalidResourceDetails,
+    to_api_error,
+)
 
 
 class ResourceEndpoint:
@@ -39,26 +42,30 @@ class ResourceEndpoint:
         self.name = name
         self.resource = resource
 
+    def _date_from_query(self, request, key):
+        value = request.query.get(key)
+        if not value:
+            return None
+        fmt = "%Y-%m-%d-%H-%M"
+        try:
+            return datetime.strptime(value, fmt)
+        except ValueError:
+            msg = 'Param %s of %s was not in expected format: %s' % (
+                key, value, fmt)
+            raise APIError('BadRequest', message=msg)
+
     async def handle_collection(self, request):
         """Handle a request for a collection."""
         allowed_methods = self.collection_methods.intersection(
             self._collection_methods_map)
         payload = await self._validate_request(request, allowed_methods)
 
-        date_format = "%Y-%m-%d-%H-%M"
-
-        start_date = request.query.get('start_date')
-        if start_date is not None:
-            start_date = datetime.strptime(start_date, date_format)
-
-        end_date = request.query.get('end_date')
-        if end_date is not None:
-            end_date = datetime.strptime(end_date, date_format)
-
         func = getattr(
             self.resource, self._collection_methods_map[request.method])
 
         if request.method == 'GET':
+            start_date = self._date_from_query(request, 'start_date')
+            end_date = self._date_from_query(request, 'end_date')
             func = partial(func, start_date=start_date, end_date=end_date)
 
         try:

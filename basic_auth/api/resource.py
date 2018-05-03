@@ -66,7 +66,12 @@ class APIResource:
         return await self.collection.create(cleaned_data)
 
     async def get_all(self, data=None, start_date=None, end_date=None):
-        """List all resources."""
+        """List all resources.
+
+        @param data Ignored
+        @param start_date An optional start date to limit listing
+        @param end_date An optional end date to limit listing
+        """
         return tuple(await self.collection.get_all(
             start_date=start_date, end_date=end_date))
 

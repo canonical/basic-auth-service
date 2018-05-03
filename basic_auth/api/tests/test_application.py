@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 
 from aiohttp import web
@@ -91,6 +92,54 @@ class ResourceEndpointTest(APITestCase):
             {'code': 'Method Not Allowed',
              'message': 'Only POST requests are allowed'},
             json.loads(response.text))
+
+    async def test_handle_collection_get_with_dates(self):
+        content = {'id': 'foo', 'value': 'bar'}
+        await self.collection.create(content)
+
+        # Add a non-create method on the resource
+        self.endpoint.collection_methods = frozenset(['GET'])
+        self.endpoint._collection_methods_map = {'GET': 'get_collection'}
+
+        start = '1900-01-01-00-00'
+        end = '2000-01-01-00-00'
+        query_path = '?start_date=%s&end_date=%s' % (start, end)
+
+        async def get_collection(data=None, start_date=None, end_date=None):
+            self.assertEqual(
+                start_date, datetime.strptime(start, '%Y-%m-%d-%H-%M'))
+            self.assertEqual(
+                end_date, datetime.strptime(end, '%Y-%m-%d-%H-%M'))
+            return {}
+
+        self.resource.get_collection = get_collection
+        request = self.get_request(path=query_path, method='GET')
+        response = await self.endpoint.handle_collection(request)
+
+    async def test_handle_collection_get_with_invalid_dates(self):
+        content = {'id': 'foo', 'value': 'bar'}
+        await self.collection.create(content)
+
+        # Add a non-create method on the resource
+        self.endpoint.collection_methods = frozenset(['GET'])
+        self.endpoint._collection_methods_map = {'GET': 'get_collection'}
+
+        start = '1900-01-01'
+        end = '01-01-2000-2000-00-00'
+        query_path = '?start_date=%s&end_date=%s' % (start, end)
+
+        async def get_collection(data, start_date, end_date):
+            return {}
+
+        self.resource.get_collection = get_collection
+        request = self.get_request(path=query_path, method='GET')
+        with self.assertRaises(web.HTTPBadRequest) as cm:
+            await self.endpoint.handle_collection(request)
+        response = cm.exception
+        self.assertEqual(400, response.status)
+        expected_msg = ('Param start_date of 1900-01-01 was not in expected '
+            'format: %Y-%m-%d-%H-%M')
+        self.assertEqual(expected_msg, json.loads(response.text)['message'])
 
     async def test_handle_instance(self):
         """Allowed methods can be called on handle_instance."""
