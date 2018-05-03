@@ -56,7 +56,7 @@ class ResourceEndpointTest(APITestCase):
         self.endpoint.collection_methods = frozenset(['GET'])
         self.endpoint._collection_methods_map = {'GET': 'get_collection'}
 
-        async def get_collection(request):
+        async def get_collection(data=None, *args, **kwargs):
             return [content]
 
         self.resource.get_collection = get_collection
