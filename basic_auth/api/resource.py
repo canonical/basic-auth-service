@@ -65,9 +65,10 @@ class APIResource:
         cleaned_data = self._clean_data(self.create_schema, data)
         return await self.collection.create(cleaned_data)
 
-    async def get_all(self, data=None):
+    async def get_all(self, data=None, start_date=None, end_date=None):
         """List all resources."""
-        return tuple(await self.collection.get_all())
+        return tuple(await self.collection.get_all(
+            start_date=start_date, end_date=end_date))
 
     async def delete(self, resource_id, data=None):
         """Delete a resource by ID."""

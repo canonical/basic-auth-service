@@ -1,6 +1,10 @@
 """REST API application."""
 
-from functools import wraps
+from datetime import datetime
+from functools import (
+    partial,
+    wraps,
+)
 import json
 
 from aiohttp import web
@@ -41,8 +45,22 @@ class ResourceEndpoint:
             self._collection_methods_map)
         payload = await self._validate_request(request, allowed_methods)
 
+        date_format = "%Y-%m-%d-%H-%M"
+
+        start_date = request.query.get('start_date')
+        if start_date is not None:
+            start_date = datetime.strptime(start_date, date_format)
+
+        end_date = request.query.get('end_date')
+        if end_date is not None:
+            end_date = datetime.strptime(end_date, date_format)
+
         func = getattr(
             self.resource, self._collection_methods_map[request.method])
+
+        if request.method == 'GET':
+            func = partial(func, start_date=start_date, end_date=end_date)
+
         try:
             result = await func(payload)
         except Exception as error:
