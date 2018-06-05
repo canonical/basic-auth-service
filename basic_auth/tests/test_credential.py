@@ -3,8 +3,10 @@ from unittest import TestCase
 from ..credential import (
     BasicAuthCredentials,
     generate_random_token,
-    hash_token,
-    match_token,
+    hash_token1,
+    hash_token256,
+    match_token1,
+    match_token256,
 )
 
 
@@ -53,19 +55,37 @@ class GenerateRandomTokenTest(TestCase):
 
 class HashTokenTest(TestCase):
 
-    def test_hash(self):
+    def test_hash_token1(self):
         """hash_token returns the SHA1 hash of the specified string."""
         self.assertEqual(
-            '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33', hash_token('foo'))
+            '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33', hash_token1('foo'))
+
+        def test_hash_token256(self):
+            """hash_token returns the SHA256 hash of the specified string."""
+            self.assertEqual(
+                '2c26b46b68ffc68ff99b453c1d3041'
+                '3413422d706483bfa0f98a5e886266e7ae', hash_token256('foo'))
 
 
 class MatchTokenTest(TestCase):
 
-    def test_token_matches(self):
+    def test_token_matches1(self):
         """match_token returns True if the token matches the SHA1 hash."""
         self.assertTrue(
-            match_token('foo', '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33'))
+            match_token1('foo', '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33'))
 
-    def test_token_no_match(self):
+    def test_token_no_match1(self):
         """match_token returns False if the token doesn't match the hash."""
-        self.assertFalse(match_token('foo', 'wronghashsum'))
+        self.assertFalse(match_token1('foo', 'wronghashsum'))
+
+    def test_token_matches256(self):
+        """match_token returns True if the token matches the SHA1 hash."""
+        self.assertTrue(
+            match_token256(
+                'foo',
+                '2c26b46b68ffc68ff99b453c1d3041341'
+                '3422d706483bfa0f98a5e886266e7ae'))
+
+    def test_token_no_match256(self):
+        """match_token returns False if the token doesn't match the hash."""
+        self.assertFalse(match_token256('foo', 'wronghashsum'))

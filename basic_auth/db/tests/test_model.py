@@ -9,8 +9,13 @@ from ..testing import DataBaseTest
 from ..model import (
     Model,
     HashedAPICredentials,
+    HashedCredentials,
 )
-from ...credential import hash_token
+from ...credential import (
+    BasicAuthCredentials,
+    hash_token1,
+    hash_token256,
+)
 
 
 class HashedAPICredentialsTest(unittest.TestCase):
@@ -18,13 +23,28 @@ class HashedAPICredentialsTest(unittest.TestCase):
     def test_password_match_true(self):
         """password_match returns True if the password matches."""
         credentials = HashedAPICredentials(
-            'user', hash_token('pass'), 'a user')
+            'user', hash_token1('pass'), 'a user')
         self.assertTrue(credentials.password_match('pass'))
 
     def test_password_match_false(self):
         """password_match returns false if the password doesn't match."""
         credentials = HashedAPICredentials(
-            'user', hash_token('pass'), 'a user')
+            'user', hash_token1('pass'), 'a user')
+        self.assertFalse(credentials.password_match('other password'))
+
+
+class HashedCredentialsTest(unittest.TestCase):
+
+    def test_password_match_true(self):
+        """password_match returns True if the password matches."""
+        credentials = HashedCredentials(
+            'user', BasicAuthCredentials('user', hash_token256('pass')))
+        self.assertTrue(credentials.password_match('pass'))
+
+    def test_password_match_false(self):
+        """password_match returns false if the password doesn't match."""
+        credentials = HashedCredentials(
+            'user', BasicAuthCredentials('user', hash_token256('pass')))
         self.assertFalse(credentials.password_match('other password'))
 
 
@@ -44,7 +64,7 @@ class ModelTest(DataBaseTest):
         credentials = await self.model.get_credentials(user='user')
         self.assertEqual('user', credentials.user)
         self.assertEqual('username', credentials.auth.username)
-        self.assertEqual('pass', credentials.auth.password)
+        self.assertEqual(hash_token256('pass'), credentials.auth.password)
 
     async def test_get_all_credentials(self):
         """All credentials can be retrieved."""
@@ -55,9 +75,9 @@ class ModelTest(DataBaseTest):
         raw_credentials = [
             (c.user, c.auth.username, c.auth.password) for c in credentials]
         expected_credentials = [
-            ('user3', 'usernameA', 'pass3'),
-            ('user2', 'usernameB', 'pass2'),
-            ('user1', 'usernameC', 'pass1'),
+            ('user3', 'usernameA', hash_token256('pass3')),
+            ('user2', 'usernameB', hash_token256('pass2')),
+            ('user1', 'usernameC', hash_token256('pass1')),
         ]
         self.assertEqual(raw_credentials, expected_credentials)
 
@@ -66,7 +86,7 @@ class ModelTest(DataBaseTest):
         now = datetime.now()
         await self.model.add_credentials('user1', 'usernameC', 'pass1')
 
-        expected_credentials = [('user1', 'usernameC', 'pass1')]
+        expected_credentials = [('user1', 'usernameC', hash_token256('pass1'))]
         start = now - timedelta(10)
         end = now + timedelta(10)
 
@@ -132,7 +152,7 @@ class ModelTest(DataBaseTest):
         credentials = await self.model.get_credentials(user='user')
         self.assertEqual('user', credentials.user)
         self.assertEqual('newusername', credentials.auth.username)
-        self.assertEqual('newpass', credentials.auth.password)
+        self.assertEqual(hash_token256('newpass'), credentials.auth.password)
 
     async def test_update_credentials_not_found(self):
         """If the user is not found, update_credentials returns False."""

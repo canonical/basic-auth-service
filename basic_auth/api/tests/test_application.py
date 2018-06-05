@@ -114,7 +114,7 @@ class ResourceEndpointTest(APITestCase):
 
         self.resource.get_collection = get_collection
         request = self.get_request(path=query_path, method='GET')
-        response = await self.endpoint.handle_collection(request)
+        await self.endpoint.handle_collection(request)
 
     async def test_handle_collection_get_with_invalid_dates(self):
         content = {'id': 'foo', 'value': 'bar'}
@@ -138,7 +138,7 @@ class ResourceEndpointTest(APITestCase):
         response = cm.exception
         self.assertEqual(400, response.status)
         expected_msg = ('Param start_date of 1900-01-01 was not in expected '
-            'format: %Y-%m-%d-%H-%M')
+                        'format: %Y-%m-%d-%H-%M')
         self.assertEqual(expected_msg, json.loads(response.text)['message'])
 
     async def test_handle_instance(self):

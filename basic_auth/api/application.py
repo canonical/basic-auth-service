@@ -14,10 +14,7 @@ from .response import (
     APIResponse,
     APIError,
 )
-from .error import (
-    InvalidResourceDetails,
-    to_api_error,
-)
+from .error import to_api_error
 
 
 class ResourceEndpoint:

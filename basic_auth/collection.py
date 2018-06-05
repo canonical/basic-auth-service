@@ -3,7 +3,10 @@
 import asyncio
 import logging
 
-from .credential import BasicAuthCredentials
+from .credential import (
+    BasicAuthCredentials,
+    hash_token256,
+)
 from .lock import locking
 from .db import transact
 from .api import ResourceCollection
@@ -30,7 +33,8 @@ class MemoryCredentialsCollection(SampleResourceCollection):
 
     @locking
     async def create(self, details):
-        auth = _get_auth(details.get('token'))
+        token = _prep_token(details.get('token'))
+        auth = _get_auth(token)
         self._check_duplicated_username(details['user'], auth.username)
         details['token'] = str(auth)
         return await super().create(details)
@@ -41,7 +45,8 @@ class MemoryCredentialsCollection(SampleResourceCollection):
 
     @locking
     async def update(self, user, details):
-        auth = _get_auth(details.get('token'))
+        token = _prep_token(details.get('token'))
+        auth = _get_auth(token)
         self._check_duplicated_username(user, auth.username)
         details['token'] = str(auth)
         return await super().update(user, details)
@@ -60,7 +65,7 @@ class MemoryCredentialsCollection(SampleResourceCollection):
     async def credentials_match(self, username, password):
         """Return whether the provided user/password match."""
         credentials = [details['token'] for details in self.items.values()]
-        return '{}:{}'.format(username, password) in credentials
+        return '{}:{}'.format(username, hash_token256(password)) in credentials
 
     async def api_credentials_match(self, username, password):
         """Return whether API credentials match."""
@@ -138,7 +143,7 @@ class DataBaseCredentialsCollection(ResourceCollection):
         if credentials is None:
             return False
         log.info('credentials login attempt: {}'.format(credentials.user))
-        return password == credentials.auth.password
+        return credentials.password_match(password)
 
     @transact
     async def api_credentials_match(self, model, username, password):
@@ -157,6 +162,19 @@ class DataBaseCredentialsCollection(ResourceCollection):
         if credentials.user != user:
             # Another user is using this username.
             raise InvalidResourceDetails('Token username already in use')
+
+
+def _prep_token(token):
+    """Prepare a token by ensuring that it uses the hashword rather than
+    the password.
+    """
+    if token is None:
+        return
+    split = token.split(':')
+    if len(split) == 2 and '' not in split:
+        split[1] = hash_token256(split[1])
+        token = ':'.join(split)
+    return token
 
 
 def _get_auth(token):

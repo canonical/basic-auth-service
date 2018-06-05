@@ -3,6 +3,7 @@ from aiohttp.test_utils import (
     unittest_run_loop,
 )
 
+from ..credential import hash_token256
 from ..testing import basic_auth_header
 from ..api.testing import APIApplicationTestCase
 from ..middleware import BaseBasicAuthMiddlewareFactory
@@ -60,12 +61,20 @@ class SetupAPIApplicationTest(APIApplicationTestCase):
     @unittest_run_loop
     async def test_setup_api_application(self):
         """An application for the API is set up."""
-        content = {"user": "foo", "token": "user:pass"}
+        content = {
+            "user": "foo",
+            "token": "user:pass"
+        }
+        expected = {
+            "user": "foo",
+            "token": "user:{}".format(hash_token256('pass'))
+        }
         response = await self.client_request(
             method='POST', path='/credentials', json=content,
             content_type=self.CONTENT_TYPE,
             auth=('user', 'pass'))
-        self.assertEqual(content, await response.json())
+
+        self.assertEqual(expected, await response.json())
 
     @unittest_run_loop
     async def test_basic_auth_required(self):

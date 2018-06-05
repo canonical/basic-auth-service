@@ -6,8 +6,10 @@ from sqlalchemy import and_
 
 from ..credential import (
     BasicAuthCredentials,
-    hash_token,
-    match_token,
+    hash_token1,
+    hash_token256,
+    match_token1,
+    match_token256,
 )
 from .schema import (
     CREDENTIALS,
@@ -28,7 +30,15 @@ class HashedAPICredentials(APICredentials):
 
     def password_match(self, password):
         """Return whether the password matches the hashed one."""
-        return match_token(password, self.password)
+        return match_token1(password, self.password)
+
+
+class HashedCredentials(Credentials):
+    """Credentials where the password is hashed."""
+
+    def password_match(self, password):
+        """Return whether the password matches the hashed one."""
+        return match_token256(password, self.auth.password)
 
 
 class Model:
@@ -41,7 +51,8 @@ class Model:
         """Add user credentials."""
         await self._conn.execute(
             CREDENTIALS.insert().values(
-                user=user, username=username, password=password))
+                user=user, username=username,
+                password=hash_token256(password)))
         return Credentials(user, BasicAuthCredentials(username, password))
 
     async def get_all_credentials(self, start_date=None, end_date=None):
@@ -83,7 +94,7 @@ class Model:
         if row is None:
             return
 
-        return Credentials(
+        return HashedCredentials(
             row['user'],
             BasicAuthCredentials(row['username'], row['password']))
 
@@ -91,7 +102,7 @@ class Model:
         """Update user credentials."""
         result = await self._conn.execute(
             CREDENTIALS.update().where(CREDENTIALS.c.user == user).values(
-                username=username, password=password))
+                username=username, password=hash_token256(password)))
         return bool(result.rowcount)
 
     async def is_known_user(self, user):
@@ -113,7 +124,7 @@ class Model:
             description = ''
         await self._conn.execute(
             API_CREDENTIALS.insert().values(
-                username=username, password=hash_token(password),
+                username=username, password=hash_token1(password),
                 description=description))
         return APICredentials(username, password, description)
 

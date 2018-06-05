@@ -37,11 +37,21 @@ def generate_random_token(length=20):
     return "".join(random.choice(choices) for _ in range(length))
 
 
-def hash_token(token):
-    """Return the hashed version of a token."""
+def hash_token1(token):
+    """Return the SHA1 hashed version of a token."""
     return hashlib.sha1(token.encode('utf-8')).hexdigest()
 
 
-def match_token(token, hashsum):
-    """Return whether a token matches an hash."""
-    return hash_token(token) == hashsum
+def hash_token256(token):
+    """Return the SHA256 hashed version of a token."""
+    return hashlib.sha256(token.encode('utf-8')).hexdigest()
+
+
+def match_token1(token, hashsum):
+    """Return whether a token matches a SHA1 hash."""
+    return hash_token1(token) == hashsum
+
+
+def match_token256(token, hashsum):
+    """Return whether a token matches a SHA256 hash."""
+    return hash_token256(token) == hashsum
